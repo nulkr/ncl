@@ -200,12 +200,12 @@ namespace ncl
 
             uint GetX(int cardIndex);
             uint GetY(int cardIndex);
-            uint SetY(int cardIndex, uint value);
+            void SetY(int cardIndex, uint value);
 
-            uint GetBitX(int cardIndex, int bitIndex);
-            uint GetBitY(int cardIndex, int bitIndex);
-            uint SetBitY(int cardIndex, int bitIndex, bool state);
-            uint ToggleBitY(int cardIndex, int bitIndex);
+            bool GetBitX(int cardIndex, int bitIndex);
+            bool GetBitY(int cardIndex, int bitIndex);
+            void SetBitY(int cardIndex, int bitIndex, bool state);
+            void ToggleBitY(int cardIndex, int bitIndex);
             #endregion
         }
     }

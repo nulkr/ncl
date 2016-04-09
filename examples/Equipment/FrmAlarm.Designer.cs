@@ -1,4 +1,4 @@
-﻿namespace j2kTestEquipment
+﻿namespace exEquipment
 {
     partial class FrmAlarm
     {

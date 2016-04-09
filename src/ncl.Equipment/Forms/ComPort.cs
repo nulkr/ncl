@@ -1,10 +1,11 @@
-﻿/*
- * usage : 
- * 1. form inheritance
- * 2. override Send, {AddToListBox}
- * 3. add event serialPort
- * 4. add event seqMonitoring
- */
+﻿/// Base COM port terminal
+/// 
+/// usage : 
+///  1. form inheritance
+///  2. override Send, {AddToListBox}
+///  3. add event serialPort
+///  4. add event seqMonitoring
+///
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace ncl
 {
@@ -32,7 +34,18 @@ namespace ncl
             get { return serialPort.IsOpen;  }
             set
             {
-                if (value) serialPort.Open();
+                if (value)
+                {
+                    try
+                    {
+                        serialPort.Open();
+                    }
+                    catch (Exception e)
+                    {
+                        MsgBox.Error(e.Message);
+                        App.Logger.Fatal(e);
+                    }                    
+                }
                 else serialPort.Close();
 
                 btnConnected.State = serialPort.IsOpen;
@@ -62,70 +75,43 @@ namespace ncl
 
             IniFileName = "ComPort.ini";
             ComName = GetType().Name;
+
+            if (File.Exists(IniFileName))
+                LoadSettings();
         }
-        public ComPort(string comName, string iniFileName)
+        public ComPort(string comName, string iniFilename = "ComPort.ini")
         {
             InitializeComponent();
 
             propGrid.Visible = false;
 
-            IniFileName = iniFileName;
+            IniFileName = iniFilename;
             ComName = comName;
 
-            if (File.Exists(iniFileName))
-                LoadSettings(iniFileName);
+            if (File.Exists(IniFileName))
+                LoadSettings();
         }
+
         #endregion
 
         #region method
 
-        public void LoadSettings(string iniFilename)
+        public void LoadSettings()
         {
+            IniFile ini = new IniFile(IniFileName);
+
+            bool oldconn = Connected;
             Connected = false;
 
-            IniFile ini = new IniFile(iniFilename);
+            ini.Read(ComName, serialPort);
 
-            ini.Load();
-
-            serialPort.PortName = ini.Read(ComName, "PortName", serialPort.PortName.ToString());
-            serialPort.BaudRate = ini.Read(ComName, "BaudRate", serialPort.BaudRate);
-            serialPort.DataBits = ini.Read(ComName, "DataBits", serialPort.DataBits);
-            serialPort.Handshake = ini.Read<Handshake>(ComName, "Handshake", serialPort.Handshake);
-            serialPort.Parity = ini.Read<Parity>(ComName, "Parity", serialPort.Parity);
-            serialPort.StopBits = ini.Read<StopBits>(ComName, "StopBits", serialPort.StopBits);
-
-            serialPort.DiscardNull = ini.Read(ComName, "DiscardNull", serialPort.DiscardNull);
-            serialPort.DtrEnable = ini.Read(ComName, "DtrEnable", serialPort.DtrEnable);
-            serialPort.ParityReplace = (byte)ini.Read(ComName, "ParityReplace", serialPort.ParityReplace);
-            serialPort.ReadBufferSize = ini.Read(ComName, "ReadBufferSize", serialPort.ReadBufferSize);
-            serialPort.ReadTimeout = ini.Read(ComName, "ReadTimeout", serialPort.ReadTimeout);
-            serialPort.ReceivedBytesThreshold = ini.Read(ComName, "ReceivedBytesThreshold", serialPort.ReceivedBytesThreshold);
-            serialPort.RtsEnable = ini.Read(ComName, "RtsEnable", serialPort.RtsEnable);
-            serialPort.WriteBufferSize = ini.Read(ComName, "WriteBufferSize", serialPort.WriteBufferSize);
-            serialPort.WriteTimeout = ini.Read(ComName, "WriteTimeout", serialPort.WriteTimeout);
+            Connected = oldconn;
         }
-        public void SaveSettings(string iniFilename)
+        public void SaveSettings()
         {
-            IniFile ini = new IniFile(iniFilename);
+            IniFile ini = new IniFile(IniFileName);
 
-            ini.Write(ComName, "PortName", serialPort.PortName);
-            ini.Write(ComName, "BaudRate", serialPort.BaudRate);
-            ini.Write(ComName, "DataBits", serialPort.DataBits);
-            ini.Write(ComName, "Handshake", serialPort.Handshake);
-            ini.Write(ComName, "Parity", serialPort.Parity);
-            ini.Write(ComName, "StopBits", serialPort.StopBits);
-
-            ini.Write(ComName, "DiscardNull", serialPort.DiscardNull);
-            ini.Write(ComName, "DtrEnable", serialPort.DtrEnable);
-            ini.Write(ComName, "ParityReplace", serialPort.ParityReplace);
-            ini.Write(ComName, "ReadBufferSize", serialPort.ReadBufferSize);
-            ini.Write(ComName, "ReadTimeout", serialPort.ReadTimeout);
-            ini.Write(ComName, "ReceivedBytesThreshold", serialPort.ReceivedBytesThreshold);
-            ini.Write(ComName, "RtsEnable", serialPort.RtsEnable);
-            ini.Write(ComName, "WriteBufferSize", serialPort.WriteBufferSize);
-            ini.Write(ComName, "WriteTimeout", serialPort.WriteTimeout);
-
-            ini.Save();
+            ini.Write(ComName, serialPort);
         }
 
         public virtual void Send(string s)
@@ -170,13 +156,6 @@ namespace ncl
                 seqMonitoring.Abort();
         }
 
-        private void btnClose_Click(object sender, EventArgs e)
-        {
-            SaveSettings(IniFileName);
-
-            Hide();
-        }
-
         private void btnSettings_Click(object sender, EventArgs e)
         {
             if (propGrid.SelectedObject == null)
@@ -186,13 +165,16 @@ namespace ncl
 
             if (propGrid.Visible)
             {
+                SaveSettings();
                 propGrid.Visible = false;
                 Connected = true;
+                btnSettings.Text = "Show Settings";
             }
             else
             {
                 Connected = false;
                 propGrid.Visible = true;
+                btnSettings.Text = "Hide && Save Settings";
             }
         }
 
@@ -205,7 +187,16 @@ namespace ncl
                 cbInput.InvokeIfNeeded(() => cbInput.Text = "");
             }
         }
+
+        private void ComPort_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason != CloseReason.UserClosing) return;
+            e.Cancel = true;
+            Hide();
+        }
+        
         #endregion
+
 
     }
 }

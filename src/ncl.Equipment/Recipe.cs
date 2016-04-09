@@ -5,9 +5,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Windows.Forms;
-using System.Xml.Serialization;
-using System.Xml;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
 
 namespace ncl
 {
@@ -16,42 +17,35 @@ namespace ncl
         [Flags]
         public enum RecipeKindFlag
         {
-            None = 0x0000,
-            Fixed = 0x0001,	// symbol = !
-            Param = 0x0002,   // symbol = *
-            CIM = 0x0004,	// symbol = @
-            PMAC = 0x0010,   // symbol = D
-            PLC = 0x0020,   // sympol = P
-            AJIN = 0x0040,   // sympol = A
-            Bool = 0x1000,   // symbol = B
-            Int = 0x2000,   // symbol = #
-            String = 0x4000,   // symbol = S
-            All = 0xFFFFFF  // all flags
+            None    = 0x0000,
+            Fixed   = 0x0001,	// symbol = !
+            Param   = 0x0002,   // symbol = *
+            CIM     = 0x0004,	// symbol = @
+            PMAC    = 0x0010,   // symbol = D
+            PLC     = 0x0020,   // sympol = P
+            AJIN    = 0x0040,   // sympol = A
+            Bool    = 0x1000,   // symbol = B
+            Int     = 0x2000,   // symbol = #
+            String  = 0x4000,   // symbol = S
         };
 
-        [DataContractAttribute()]
+        // Key, Value, Text만 저정한다
         public class RecipeItem
         {
-            #region field
+            public double Value = 0;
+            public string Text = "";
 
+            [JsonIgnore]
+            //[JsonConverter(typeof(StringEnumConverter))]
             public RecipeKindFlag Kind;
 
-            [DataMemberAttribute()]
-            public double Value;
+            [JsonIgnore]
+            public string Category = "";
 
-            [DataMemberAttribute()]
-            public string Text;
+            [JsonIgnore]
+            public string Comment = "";
 
-            [DataMemberAttribute()]
-            public string Category;
-
-            [DataMemberAttribute()]
-            public string Comment;
-            #endregion
-
-            #region property
-
-            [DataMemberAttribute()]
+            [JsonIgnore]
             public string Symbols
             {
                 get
@@ -87,12 +81,14 @@ namespace ncl
                 }
             }
 
+            [JsonIgnore]
             public int AsInt
             {
                 get { return (int)Math.Round(Value); }
                 set { Value = value; }
             }
 
+            [JsonIgnore]
             public bool AsBool
             {
                 get { return AsInt != 0; }
@@ -102,232 +98,66 @@ namespace ncl
                     else Value = 0;
                 }
             }
-            #endregion
-
-            #region method
 
             public bool IsString() { return (Kind & RecipeKindFlag.String) > 0; }
             public bool IsBool() { return (Kind & (RecipeKindFlag.Bool)) > 0; }
             public bool IsInt() { return (Kind & RecipeKindFlag.Int) > 0; }
-            #endregion
         }
 
-        [DataContractAttribute()]
         public class Recipe
         {
-            #region field
+            private readonly char[] PMAC_PREFIX = {'M', 'I', 'Q', 'P'};
+            private MemoryStream _BackupStream;
+            private BsonReader _BackupReader;
+            private BsonWriter _BackupWriter;
 
-            private byte[] _BackupBuffer;
+            public readonly string FixedRcpFile;
 
-            [DataMemberAttribute()]
-            public readonly DataInfo DataInfo = new DataInfo(1, "ncl Recipe");
+            public readonly DataInfo DataInfo = new DataInfo(1, "ncl.Equipment Recipe"); // 항상 최신 버전을 가지고 있어야 하므로 readonly
 
-            [DataMemberAttribute()]
-            public Dictionary<string, RecipeItem> Dictionary = new Dictionary<string, RecipeItem>();
-            #endregion
+            public Dictionary<string, RecipeItem> Items = new Dictionary<string, RecipeItem>();
 
-            #region property
+            #region property 
 
+            [JsonIgnore]
             public RecipeItem this[string key]
             {
-                get { return Dictionary[key]; }
-                set { Dictionary[key] = value; }
+                get { return Items[key]; }
+                set { Items[key] = value; }
             }
             #endregion
 
-            #region method
+            #region constructor
 
-            /// Control 의 이름에 따라 Key를 추출하고 해당 Key 가 존재하면 item 에 넣어준다
-            /// <param name="ctrl">검사할 Control</param>
-            /// <param name="type">일치해야할 Control Type</param>
-            /// <param name="sPrefix">포함 해야할 Control.Name의 Prefix</param>
-            /// <param name="kind">포함 해야할 Kind Flag</param>
-            /// <param name="item">해당 Item을 넘겨 받을 객체</param>
-            /// <returns>KindFlag를 포함할때만 return true</returns>
-            private bool ValidKey(Control ctrl, Type type, string sPrefix, RecipeKindFlag kind, ref RecipeItem item)
+            public Recipe(string fixedRcpFile = "")
             {
-                if ((ctrl.GetType() != type) || (ctrl.Name.IndexOf(sPrefix) != 0))
-                    return false;
+                if (fixedRcpFile == "")
+                    FixedRcpFile = App.Path + App.Name + ".fxrcp";
+                else
+                    FixedRcpFile = fixedRcpFile;
 
-                string sKey = ctrl.Name.Substring(sPrefix.Length);
+                _BackupStream = new MemoryStream();
+                _BackupReader = new BsonReader(_BackupStream);
+                _BackupWriter = new BsonWriter(_BackupStream);
 
-                if (!Dictionary.ContainsKey(sKey))
-                    return false;
+            }
+            #endregion
 
-                item = Dictionary[sKey];
+            public event ReadBinaryEventHandler OnReadBinary;
+            public event WriteBinaryEventHandler OnWriteBinary;
 
-                if ((item.Kind & kind) == kind) return true;
-                else return false;
+            // 모든 데이터 목록 삭제
+            public void ClearSchema(string filename)
+            {
+                Items.Clear();
             }
 
-            /// Stream 에서 압축 풀어 읽음
-            /// <para>override method 에서는 이걸 가지고 각 버전에 맞게 읽을수 있도록 하자</para>
-            /// <param name="reader"></param>
-            /// <param name="ver">파일에서 읽어들인 Version No</param>
-            protected virtual void ReadBinary(BinaryReader reader, ref int ver)
+            // PMAC Define 파일을 Parsing 하여 데이터 목록을 얻고 Items에 추가 한다.
+            public void AddPmacSchema(string filename, RecipeKindFlag kind = RecipeKindFlag.None)
             {
-                Dictionary.Clear();
-
-                ver = reader.ReadInt32();
-
-                int nCnt = reader.ReadInt32();
-
-                while (nCnt-- > 0)
-                {
-                    RecipeItem item = new RecipeItem();
-
-                    string key = reader.ReadString();
-                    item.Kind = (RecipeKindFlag)reader.ReadInt32();
-                    item.Value = reader.ReadDouble();
-                    item.Text = reader.ReadString();
-                    item.Category = reader.ReadString();
-                    item.Comment = reader.ReadString();
-
-                    Dictionary.Add(key, item);
-                }
-            }
-
-            /// Stream 에 저장. 항상 최신 버전으로 저장한다
-            /// <param name="writer"></param>
-            protected virtual void WriteBinary(BinaryWriter writer)
-            {
-                writer.Write(DataInfo.VersionNo);
-
-                writer.Write(Dictionary.Count);
-                foreach (KeyValuePair<string, RecipeItem> kvp in Dictionary)
-                {
-                    writer.Write(kvp.Key);
-                    writer.Write((int)kvp.Value.Kind);
-                    writer.Write(kvp.Value.Value);
-                    writer.Write(kvp.Value.Text);
-                    writer.Write(kvp.Value.Category);
-                    writer.Write(kvp.Value.Comment);
-                }
-            }
-
-            public void LoadFromCSV(string filename)
-            {
-                //Dictionary.Clear();
-
+                
                 string s;
-                StreamReader fr = new StreamReader(filename, false);
-
-                while ((s = fr.ReadLine()) != null)
-                {
-                    s = s.Trim();
-                    if (s.Length < 1) continue;
-
-                    // ignore comment
-                    if (s.IndexOf("//") == 0) continue;
-                    if (s.IndexOf(';') == 0) continue;
-
-                    string[] words = s.Split(',');
-                    if (words.Length < 1)
-                        continue;
-
-                    RecipeItem item = new RecipeItem();
-                    string key = "";
-
-                    for (int i = 0; i < words.Length; i++)
-                    {
-                        switch (i)
-                        {
-                            case 0: item.Category = words[i].Trim(); break;
-                            case 1: key = words[i].Trim(); break;
-                            case 2: item.Value = Convert.ToDouble(words[i]); break;
-                            case 3: item.Text = words[i].Trim(); break;
-                            case 4: item.Comment = words[i].Trim(); break;
-                            case 5: item.Symbols = words[i].Trim(); break;
-                        }
-                    }
-
-                    if (key != "")
-                    {
-                        if (Dictionary.ContainsKey(key))
-                        {
-                            if (MsgBox.Query(key + " is aleady exists!\nAbort process?"))
-                                break;
-                        }
-                        else
-                            Dictionary.Add(key, item);
-                    }
-                }
-
-                fr.Close();
-            }
-
-            public void SaveToCSV(string filename)
-            {
-                StreamWriter fw = new StreamWriter(filename, false);
-
-                fw.WriteLine("// Category, Key, Value, Text, Comment, Symbols (!:Fixed *:Param @:CIM 0:PMAC 1:PLC I:Input O:Output B:Boolean #:Integer S:String)");
-
-                foreach (KeyValuePair<string, RecipeItem> kvp in Dictionary)
-                {
-                    fw.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}, {5}", kvp.Value.Category, kvp.Key, kvp.Value.Value, kvp.Value.Text, kvp.Value.Comment, kvp.Value.Symbols));
-                }
-
-                fw.Close();
-            }
-
-            public void LoadFromFile(string filename)
-            {
-                using (var file = new FileStream(filename, FileMode.Open))
-                using (var deflate = new DeflateStream(file, CompressionMode.Decompress))
-                using (var reader = new BinaryReader(deflate))
-                {
-                    // TODO : check version
-                    int ver = DataInfo.VersionNo;
-                    ReadBinary(reader, ref ver);
-                }
-            }
-
-            public void SaveToFile(string filename)
-            {
-                using (var file = new FileStream(filename, FileMode.OpenOrCreate))
-                using (var deflate = new DeflateStream(file, CompressionMode.Compress))
-                using (var writer = new BinaryWriter(deflate))
-                {
-                    WriteBinary(writer);
-                }
-            }
-
-            /// 내부 Backup Buffer로 데이터를 저장한다.
-            public void Backup()
-            {
-                using (var ms = new MemoryStream())
-                using (var ds = new DeflateStream(ms, CompressionMode.Compress))
-                using (var writer = new BinaryWriter(ds))
-                {
-                    WriteBinary(writer);
-
-                    _BackupBuffer = ms.GetBuffer();
-                }
-            }
-
-            /// 내부 Backup Buffer 로부터 데이터를 읽어온다
-            /// <returns></returns>
-            public bool Restore()
-            {
-                using (var ms = new MemoryStream(_BackupBuffer))
-                using (var ds = new DeflateStream(ms, CompressionMode.Decompress))
-                using (var reader = new BinaryReader(ds))
-                {
-                    int ver = DataInfo.VersionNo;
-                    ReadBinary(reader, ref ver);
-                }
-
-                return true;
-            }
-
-            /// PMAC Define 파일을 Parsing 하여 Dictionary에 추가 한다. 기존 데이터와 겹치는 건 패스
-            /// <param name="filename"></param>
-            /// <param name="kind"></param>
-            public void AddFromPMAC(string filename, RecipeKindFlag kind = RecipeKindFlag.None)
-            {
-                string s;
-                StreamReader fr = new StreamReader(filename, Encoding.GetEncoding("ks_c_5601-1987"), true);
-
+                using (var fr = new StreamReader(filename, Encoding.GetEncoding("ks_c_5601-1987"), true))
                 while ((s = fr.ReadLine()) != null)
                 {
                     s = s.Trim();
@@ -390,17 +220,173 @@ namespace ncl
                         }
                     }
 
-                    if (key != "" && !Dictionary.ContainsKey(key))
+                    if (key != "" && !Items.ContainsKey(key))
                     {
-                        item.Kind |= RecipeKindFlag.PMAC | kind;
+                        if (item.Kind.HasFlag(RecipeKindFlag.String) || item.Text.Length < 1 || item.Text.ToUpper().IndexOfAny(PMAC_PREFIX) != 0)
+                            item.Kind |= kind;
+                        else
+                            item.Kind |= RecipeKindFlag.PMAC | kind;
 
-                        Dictionary.Add(key, item);
+                        Items.Add(key, item);
                     }
                 }
-
-                fr.Close();
             }
 
+            // CSV 파일을 Parsing 하여 데이터 목록을 얻고 Items에 추가 한다.
+            public void AddCsvSchema(string filename, char seperator = ',')
+            {
+                string s;
+                using (var fr = new StreamReader(filename))
+                while ((s = fr.ReadLine()) != null)
+                {
+                    s = s.Trim();
+                    if (s.Length < 1) continue; // ignore empty
+                    if (s.IndexOf("//") == 0) continue; // ignore comment
+                    if (s.IndexOf(';') == 0) continue; // ignore comment
+
+                    string[] words = s.Split(seperator);
+                    if (words.Length < 1)  // ignore empty
+                        continue;
+
+                    string key = words[0].Trim();
+                    if (key == "" || Items.ContainsKey(key)) // ignore empty || aleady exists
+                        continue;
+
+                    RecipeItem item = new RecipeItem();
+
+                    // Key, Value, Text, Category, Comment, Symbols 의 순서
+                    for (int i = 1; i < words.Length; i++)
+                    {
+                        switch (i)
+                        {
+                            case 1: item.Value = Convert.ToDouble(words[i]); break;
+                            case 2: item.Text = words[i].Trim(); break;
+                            case 3: item.Category = words[i].Trim(); break;
+                            case 4: item.Comment = words[i].Trim(); break;
+                            case 5: item.Symbols = words[i].Trim(); break;
+                        }
+                    }
+                    Items.Add(key, item);
+                }
+            }
+
+            // 데이터 목록을 CSV 파일에 쓴다
+            public void SaveCsvSchema(string filename, char seperator = ',')
+            {
+                using (var fw = new StreamWriter(filename, false))
+                {
+                    fw.WriteLine("// {0} Ver {1}", DataInfo.Description, DataInfo.VersionNo);
+                    string fmt = "{0,-30}" + seperator + " {1,-10}" + seperator + " {2,-10}" + seperator + " {3,-20}" + seperator + " {4}" + seperator + " {5}";
+                    fw.WriteLine(fmt, "// Key", "Value", "Text", "Category", "Comment", "Symbols (!:Fixed *:Param @:CIM D:PMAC P:PLC A: AJIN B:Boolean #:Integer S:String)");
+
+                    foreach (var kvp in Items)
+                        fw.WriteLine(string.Format(fmt, kvp.Key, kvp.Value.Value, kvp.Value.Text, kvp.Value.Category, kvp.Value.Comment, kvp.Value.Symbols));
+                }
+            }
+
+            public void LoadFromStream(Stream stream, bool isFixedFile)
+            {
+                using (var d = new DeflateStream(stream, CompressionMode.Decompress))
+                using (var r = new BinaryReader(d))
+                {
+                    Recipe tmp = JsonConvert.DeserializeObject<Recipe>(r.ReadString());
+
+                    foreach (var item in tmp.Items)
+                    {
+                        if (Items.ContainsKey(item.Key)) // Schema 에 존재
+                        {
+                            RecipeItem ri = Items[item.Key];
+
+                            if (isFixedFile && !ri.Kind.HasFlag(RecipeKindFlag.Fixed)) // Fixed 체크
+                                continue;
+
+                            if (ri.Kind.HasFlag(RecipeKindFlag.Param)) // Param만
+                            {
+                                ri.Value = item.Value.Value; // Value 는 항시 적용
+
+                                if (ri.Kind.HasFlag(RecipeKindFlag.String)) // TEXT 는 String Type 일때만 적용, TEXT에 ADDRESS 정보도 들어가기 때문
+                                    Items[item.Key].Text = item.Value.Text;
+                            }
+                        }
+                    }
+
+                    if (!isFixedFile && OnReadBinary != null) // FixedRcpFile 가 아닌 경우만 추가 데이터를 읽는다
+                        OnReadBinary(this, new ReadBinaryEventArgs(r, tmp.DataInfo.VersionNo)); // Fixed Data 읽기
+                    
+                    if (isFixedFile) // Fixed Data 를 읽어오는 시점에 백업한다
+                        Backup(stream);
+                }
+            }
+
+            // RCP 파일 읽기
+            public void Load(string filename)
+            {
+                bool isFixedFile = Utils.SameFileName(filename, FixedRcpFile);
+
+                using (var f = new FileStream(filename, FileMode.Open))
+                {
+                    LoadFromStream(f, isFixedFile);
+
+                    if (!isFixedFile)
+                        Load(FixedRcpFile); // Fixed Data 읽기
+                }
+            }
+
+            public void SaveToStream(Stream stream, bool isFixedFile)
+            {
+                using (var d = new DeflateStream(stream, CompressionMode.Compress))
+                using (var w = new BinaryWriter(d))
+                {
+                    w.Write(JsonConvert.SerializeObject(this));
+
+                    if (!isFixedFile && OnWriteBinary != null) // FixedRcpFile 가 아닌 경우만 추가 데이터를 파일에 쓴다
+                        OnWriteBinary(this, new WriteBinaryEventArgs(w));
+
+                    if (isFixedFile) // Fixed Data 를 저장하는 시점에 백업한다
+                        Backup(stream);
+                }
+            }
+
+            // RCP 파일 저장, 항상 최신 버전으로 저장된다
+            public void Save(string filename)
+            {
+                bool isFixedFile = Utils.SameFileName(filename, FixedRcpFile);
+
+                using (var f = new FileStream(filename, FileMode.Create))
+                {
+                    SaveToStream(f, isFixedFile);
+
+                    if (!isFixedFile)
+                        Save(FixedRcpFile); // Fixed Data 저장
+                }
+            }
+
+            // 내부 Backup Buffer 로부터 데이터를 읽어온다
+            public void Restore()
+            {
+                _BackupStream.Seek(0, SeekOrigin.Begin);
+                using (var ms = new MemoryStream())
+                {
+                    _BackupStream.CopyTo(ms);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    LoadFromStream(ms, false);
+                }
+            }
+
+            // 내부 Backup Buffer로 데이터를 저장한다.s
+            private void Backup(Stream src)
+            {
+                _BackupStream = new MemoryStream();
+                src.Seek(0, SeekOrigin.Begin);
+                src.CopyTo(_BackupStream);
+            }
+
+            public void Backup()
+            {
+                using (var ms = new MemoryStream()) // SaveToStream 호출시마다 자동 백업됨
+                    SaveToStream(ms, false);
+            }
+            
             /// kind 속성을 갖는 Recipe Item을 그리드에 출력 
             /// <param name="dstGrid"></param>
             /// <param name="kind">Grid에 출력할 RecipeKindFlag</param>
@@ -417,7 +403,7 @@ namespace ncl
                 dstGrid.Columns[3].HeaderText = "Comment";
                 dstGrid.Columns[3].ReadOnly = true;
 
-                foreach (KeyValuePair<string, RecipeItem> kvp in Dictionary)
+                foreach (KeyValuePair<string, RecipeItem> kvp in Items)
                 {
                     // kind 가 지정되어 있고, RecipeItem.Kind 가 해당되지 않으면 패스
                     if (kind != RecipeKindFlag.None && (kvp.Value.Kind & kind) == 0)
@@ -455,7 +441,7 @@ namespace ncl
                 {
                     string key = srcGrid.Rows[i].Cells[1].ToString();
 
-                    if (Dictionary.ContainsKey(key))
+                    if (Items.ContainsKey(key))
                     {
                         RecipeItem item = this[key];
 
@@ -507,7 +493,7 @@ namespace ncl
 
                 dstPropGrid.SelectedObject = rtd;
 
-                foreach (KeyValuePair<string, RecipeItem> kvp in Dictionary)
+                foreach (KeyValuePair<string, RecipeItem> kvp in Items)
                 {
                     if ((kvp.Value.Kind & kind) > 0)
                         rtd.Add(kvp.Key, kvp.Value);
@@ -518,16 +504,40 @@ namespace ncl
                 dstPropGrid.Refresh();
             }
 
+            /// Control 의 이름에 따라 Key를 추출하고 해당 Key의 item 을 찾는다
+            /// <param name="ctrl">검사할 Control</param>
+            /// <param name="type">일치해야할 Control Type</param>
+            /// <param name="sPrefix">포함 해야할 Control.Name의 Prefix</param>
+            /// <param name="kind">포함 해야할 Kind Flag</param>
+            /// <param name="item">해당 Item을 넘겨 받을 객체</param>
+            /// <returns>KindFlag를 포함할때만 return true</returns>
+            private bool FindItem(Control ctrl, Type type, string sPrefix, RecipeKindFlag kind, ref RecipeItem item)
+            {
+                if ((ctrl.GetType() != type) || (ctrl.Name.IndexOf(sPrefix) != 0))
+                    return false;
+
+                string key = ctrl.Name.Substring(sPrefix.Length);
+
+                if (!Items.ContainsKey(key))
+                    return false;
+
+                if ((Items[key].Kind & kind) != kind) 
+                    return false;
+
+                item = Items[key];
+                return true;
+            }
+            
             /// Recipe -> Child Control
             /// <param name="ctrlParent"></param>
             /// <param name="kind"></param>
             public void AssignToControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.Param)
             {
-                RecipeItem item = null;
-
                 foreach (Control ctrl in ctrlParent.Controls)
                 {
-                    if (ValidKey(ctrl, typeof(ValueEdit), "edt_", kind, ref item))
+                    RecipeItem item = null;
+
+                    if (FindItem(ctrl, typeof(ValueEdit), "edt_", kind, ref item))
                     {
                         if (item.IsString())
                             (ctrl as ValueEdit).Text = item.Text;
@@ -536,13 +546,13 @@ namespace ncl
                         else
                             (ctrl as ValueEdit).Value = item.Value;
                     }
-                    else if (ValidKey(ctrl, typeof(ComboBox), "cb_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(ComboBox), "cb_", kind, ref item))
                         (ctrl as ComboBox).SelectedIndex = item.AsInt;
-                    else if (ValidKey(ctrl, typeof(RadioGroup), "rg_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(RadioGroup), "rg_", kind, ref item))
                         (ctrl as RadioGroup).SelectedIndex = item.AsInt;
-                    else if (ValidKey(ctrl, typeof(StateButton), "sbtn_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(StateButton), "sbtn_", kind, ref item))
                         (ctrl as StateButton).State = item.AsBool;
-                    else if (ValidKey(ctrl, typeof(CheckBox), "chk_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(CheckBox), "chk_", kind, ref item))
                         (ctrl as CheckBox).Checked = item.AsBool;
 
                     if (ctrl.HasChildren)
@@ -555,11 +565,11 @@ namespace ncl
             /// <param name="kind"></param>
             public void AssignFromControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.Param)
             {
-                RecipeItem item = null;
-
                 foreach (Control ctrl in ctrlParent.Controls)
                 {
-                    if (ValidKey(ctrl, typeof(ValueEdit), "edt_", kind, ref item))
+                    RecipeItem item = null;
+
+                    if (FindItem(ctrl, typeof(ValueEdit), "edt_", kind, ref item))
                     {
                         if (item.IsString())
                             item.Text = (ctrl as ValueEdit).Text;
@@ -568,21 +578,42 @@ namespace ncl
                         else
                             item.Value = (ctrl as ValueEdit).Value;
                     }
-                    else if (ValidKey(ctrl, typeof(ComboBox), "cb_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(ComboBox), "cb_", kind, ref item))
                         item.AsInt = (ctrl as ComboBox).SelectedIndex;
-                    else if (ValidKey(ctrl, typeof(RadioGroup), "rg_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(RadioGroup), "rg_", kind, ref item))
                         item.AsInt = (ctrl as RadioGroup).SelectedIndex;
-                    else if (ValidKey(ctrl, typeof(StateButton), "sbtn_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(StateButton), "sbtn_", kind, ref item))
                         item.AsBool = (ctrl as StateButton).State;
-                    else if (ValidKey(ctrl, typeof(CheckBox), "chk_", kind, ref item))
+                    else if (FindItem(ctrl, typeof(CheckBox), "chk_", kind, ref item))
                         item.AsBool = (ctrl as CheckBox).Checked;
 
                     if (ctrl.HasChildren)
                         AssignFromControls(ctrl, kind);
                 }
             }
-
-            #endregion
         }
     }
+
+    public class ReadBinaryEventArgs : EventArgs
+    {
+        public BinaryReader Reader { get; set; }
+        public int VerNo { get; set; }
+
+        public ReadBinaryEventArgs(BinaryReader reader, int verNo)
+        {
+            this.Reader = reader;
+            this.VerNo = verNo;
+        }
+    }
+
+    public delegate void ReadBinaryEventHandler(object sender, ReadBinaryEventArgs e);
+
+    public class WriteBinaryEventArgs : EventArgs
+    {
+        public BinaryWriter Writer { get; set; }
+
+        public WriteBinaryEventArgs(BinaryWriter writer) { this.Writer = writer; }
+    }
+
+    public delegate void WriteBinaryEventHandler(object sender, WriteBinaryEventArgs e);
 }

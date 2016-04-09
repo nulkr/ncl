@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
-using j2k;
+using ncl;
+using ncl.Equipment;
 
-namespace j2kTestEquipment
+namespace exEquipment
 {
     public static class EQ
     {
-        public volatile static EquipmentMode Mode = EquipmentMode.StandBy;
-        public volatile static EquipmentStatus Status = EquipmentStatus.Idle;
-        public volatile static EquipmentAuthority Authority = EquipmentAuthority.Operator;
+        public volatile static Mode Mode = Mode.StandBy;
+        public volatile static Status Status = Status.Idle;
+        public volatile static Authority Authority = Authority.Operator;
 
         public static readonly IDIOController IOController = null;
         public static readonly IMotorController MotorController = null;
@@ -30,6 +31,8 @@ namespace j2kTestEquipment
         public static FrmAuto AutoForm = null;
         public static FrmRecipe RecipeForm = null;
 
+        public static ComTest ComTest = null;
+
         public static void Init()
         {
             MainSeq.WorkerReportsProgress = false;
@@ -38,6 +41,9 @@ namespace j2kTestEquipment
             AutoForm = new FrmAuto();
             RecipeForm = new FrmRecipe();
             AlarmForm = new FrmAlarm();
+
+            ComTest = new ComTest("테스트용 COM", App.IniFileName);
+            ComTest.Connected = true; 
 
             Alarms.AlarmForm = AlarmForm;
 
@@ -61,6 +67,8 @@ namespace j2kTestEquipment
         public static void Final()
         {
             MainSeq.Abort();
+
+            ComTest.Connected = false;
         }
 
         private static void MainSeqWork(object sender, DoWorkEventArgs e)

@@ -17,13 +17,10 @@ namespace ncl
         }
     }
 
-    [DataContractAttribute()]
     public class DataInfo
     {
-        [DataMemberAttribute()]
         public readonly int VersionNo;
 
-        [DataMemberAttribute()]
         public readonly string Description;
 
         public DataInfo(int verNo = 1, string desc = "ncl")

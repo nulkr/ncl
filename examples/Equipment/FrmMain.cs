@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using j2k;
 using System.IO;
+using ncl;
+using ncl.Equipment;
 
-
-namespace j2kTestEquipment
+namespace exEquipment
 {
     
     public partial class FrmMain : Form
@@ -101,7 +101,7 @@ namespace j2kTestEquipment
 
         private void btnLog_Click(object sender, EventArgs e)
         {
-            new LogView(@"D:\WORK\P\j2k\j2k\test\j2kTestEquipment\j2kTestEquipment\bin\Debug\Log\Exception-16-04-05.log").Show();
+            new LogView(@"D:\WORK\P\ncl\ncl\test\exEquipment\exEquipment\bin\Debug\Log\Exception-16-04-05.log").Show();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -111,9 +111,7 @@ namespace j2kTestEquipment
 
         private void btnCommTest_Click(object sender, EventArgs e)
         {
-            ComTest ComTest = new ComTest("asd", App.IniFileName);
-            ComTest.Show();
-            ComTest.SaveSettings("PORT.json");
+            EQ.ComTest.Show();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace j2kTestEquipment
+﻿namespace exEquipment
 {
     partial class FrmAuto
     {
@@ -29,16 +29,16 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmAuto));
-            this.stateButton3 = new j2k.StateButton();
-            this.stateButton2 = new j2k.StateButton();
-            this.stateButton1 = new j2k.StateButton();
+            this.stateButton3 = new ncl.StateButton();
+            this.stateButton2 = new ncl.StateButton();
+            this.stateButton1 = new ncl.StateButton();
             this.SuspendLayout();
             // 
             // stateButton3
             // 
             this.stateButton3.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("stateButton3.BackgroundImage")));
             this.stateButton3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.stateButton3.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton3.ColorSet = ncl.StateColorSet.Red;
             this.stateButton3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.stateButton3.Location = new System.Drawing.Point(328, 633);
             this.stateButton3.Name = "stateButton3";
@@ -47,7 +47,7 @@
             this.stateButton3.State = true;
             this.stateButton3.StateProp.BorderColor = System.Drawing.Color.Gray;
             this.stateButton3.StateProp.ChangeImage = false;
-            this.stateButton3.StateProp.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton3.StateProp.ColorSet = ncl.StateColorSet.Red;
             this.stateButton3.StateProp.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.stateButton3.StateProp.OffColor1 = System.Drawing.Color.White;
             this.stateButton3.StateProp.OffColor2 = System.Drawing.SystemColors.Control;
@@ -64,7 +64,7 @@
             // 
             this.stateButton2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("stateButton2.BackgroundImage")));
             this.stateButton2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.stateButton2.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton2.ColorSet = ncl.StateColorSet.Red;
             this.stateButton2.ForeColor = System.Drawing.Color.Blue;
             this.stateButton2.Location = new System.Drawing.Point(177, 633);
             this.stateButton2.Name = "stateButton2";
@@ -73,7 +73,7 @@
             this.stateButton2.State = true;
             this.stateButton2.StateProp.BorderColor = System.Drawing.Color.Gray;
             this.stateButton2.StateProp.ChangeImage = false;
-            this.stateButton2.StateProp.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton2.StateProp.ColorSet = ncl.StateColorSet.Red;
             this.stateButton2.StateProp.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.stateButton2.StateProp.OffColor1 = System.Drawing.Color.White;
             this.stateButton2.StateProp.OffColor2 = System.Drawing.SystemColors.Control;
@@ -89,7 +89,7 @@
             // 
             this.stateButton1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("stateButton1.BackgroundImage")));
             this.stateButton1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.stateButton1.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton1.ColorSet = ncl.StateColorSet.Red;
             this.stateButton1.ForeColor = System.Drawing.Color.Maroon;
             this.stateButton1.Location = new System.Drawing.Point(28, 633);
             this.stateButton1.Margin = new System.Windows.Forms.Padding(33);
@@ -99,7 +99,7 @@
             this.stateButton1.State = true;
             this.stateButton1.StateProp.BorderColor = System.Drawing.Color.Gray;
             this.stateButton1.StateProp.ChangeImage = false;
-            this.stateButton1.StateProp.ColorSet = j2k.StateColorSet.Red;
+            this.stateButton1.StateProp.ColorSet = ncl.StateColorSet.Red;
             this.stateButton1.StateProp.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.stateButton1.StateProp.OffColor1 = System.Drawing.Color.White;
             this.stateButton1.StateProp.OffColor2 = System.Drawing.SystemColors.Control;
@@ -129,8 +129,8 @@
 
         #endregion
 
-        private j2k.StateButton stateButton1;
-        private j2k.StateButton stateButton2;
-        private j2k.StateButton stateButton3;
+        private ncl.StateButton stateButton1;
+        private ncl.StateButton stateButton2;
+        private ncl.StateButton stateButton3;
     }
 }

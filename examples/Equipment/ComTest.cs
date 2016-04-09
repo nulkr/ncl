@@ -5,11 +5,11 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using j2k;
+using ncl;
 
-namespace j2kTestEquipment
+namespace exEquipment
 {
-    public partial class ComTest : j2k.ComPort
+    public partial class ComTest : ncl.ComPort
     {
         public ComTest()
         {
@@ -43,6 +43,14 @@ namespace j2kTestEquipment
         private void serialPort_ErrorReceived(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
         {
             // TODO :
+        }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            IniFile ini = new IniFile(App.Path + "1.ini");
+            ini.Read("TEST COM", serialPort);
+            IniFile ini2 = new IniFile(App.Path + "2.ini");
+            ini2.Write("TEST COM", serialPort);
         }
     }
 }

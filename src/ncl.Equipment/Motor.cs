@@ -121,7 +121,7 @@ namespace ncl
             #endregion
 
             #region method
-
+            
             public bool IsArrived(int axis1, int axis2)
             {
                 return Items[axis1].IsArrived && Items[axis2].IsArrived;

@@ -34,13 +34,12 @@
             this.listBox = new System.Windows.Forms.ListBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnSettings = new System.Windows.Forms.Button();
-            this.btnClose = new System.Windows.Forms.Button();
-            this.btnMonitoring = new ncl.StateButton();
-            this.btnConnected = new ncl.StateButton();
             this.propGrid = new System.Windows.Forms.PropertyGrid();
             this.panel2 = new System.Windows.Forms.Panel();
             this.cbInput = new System.Windows.Forms.ComboBox();
             this.splitter1 = new System.Windows.Forms.Splitter();
+            this.btnMonitoring = new ncl.StateButton();
+            this.btnConnected = new ncl.StateButton();
             this.seqMonitoring = new ncl.Sequence();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -56,43 +55,73 @@
             this.listBox.ItemHeight = 14;
             this.listBox.Location = new System.Drawing.Point(0, 0);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(656, 526);
+            this.listBox.Size = new System.Drawing.Size(421, 526);
             this.listBox.TabIndex = 3;
             // 
             // panel1
             // 
             this.panel1.Controls.Add(this.btnSettings);
-            this.panel1.Controls.Add(this.btnClose);
             this.panel1.Controls.Add(this.btnMonitoring);
             this.panel1.Controls.Add(this.btnConnected);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 444);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(6);
-            this.panel1.Size = new System.Drawing.Size(656, 82);
+            this.panel1.Size = new System.Drawing.Size(421, 82);
             this.panel1.TabIndex = 5;
             // 
             // btnSettings
             // 
             this.btnSettings.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnSettings.Location = new System.Drawing.Point(410, 6);
+            this.btnSettings.Location = new System.Drawing.Point(295, 6);
             this.btnSettings.Name = "btnSettings";
             this.btnSettings.Size = new System.Drawing.Size(120, 70);
             this.btnSettings.TabIndex = 8;
-            this.btnSettings.Text = "Settings";
+            this.btnSettings.Text = "Show Settings";
             this.btnSettings.UseVisualStyleBackColor = true;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
             // 
-            // btnClose
+            // propGrid
             // 
-            this.btnClose.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnClose.Location = new System.Drawing.Point(530, 6);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(120, 70);
-            this.btnClose.TabIndex = 7;
-            this.btnClose.Text = "Close";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            this.propGrid.Dock = System.Windows.Forms.DockStyle.Right;
+            this.propGrid.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.propGrid.Location = new System.Drawing.Point(135, 0);
+            this.propGrid.Name = "propGrid";
+            this.propGrid.Size = new System.Drawing.Size(286, 444);
+            this.propGrid.TabIndex = 11;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.cbInput);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 402);
+            this.panel2.Name = "panel2";
+            this.panel2.Padding = new System.Windows.Forms.Padding(6);
+            this.panel2.Size = new System.Drawing.Size(135, 42);
+            this.panel2.TabIndex = 13;
+            // 
+            // cbInput
+            // 
+            this.cbInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.cbInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.cbInput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbInput.Font = new System.Drawing.Font("나눔고딕코딩", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.cbInput.FormattingEnabled = true;
+            this.cbInput.ItemHeight = 15;
+            this.cbInput.Location = new System.Drawing.Point(6, 6);
+            this.cbInput.Name = "cbInput";
+            this.cbInput.Size = new System.Drawing.Size(123, 23);
+            this.cbInput.TabIndex = 11;
+            this.cbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.comboBox1_KeyUp);
+            // 
+            // splitter1
+            // 
+            this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.splitter1.Location = new System.Drawing.Point(132, 0);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(3, 402);
+            this.splitter1.TabIndex = 14;
+            this.splitter1.TabStop = false;
             // 
             // btnMonitoring
             // 
@@ -148,48 +177,6 @@
             this.btnConnected.UseVisualStyleBackColor = false;
             this.btnConnected.Click += new System.EventHandler(this.btnConnected_Click);
             // 
-            // propGrid
-            // 
-            this.propGrid.Dock = System.Windows.Forms.DockStyle.Right;
-            this.propGrid.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.propGrid.Location = new System.Drawing.Point(370, 0);
-            this.propGrid.Name = "propGrid";
-            this.propGrid.Size = new System.Drawing.Size(286, 444);
-            this.propGrid.TabIndex = 11;
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.cbInput);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 402);
-            this.panel2.Name = "panel2";
-            this.panel2.Padding = new System.Windows.Forms.Padding(6);
-            this.panel2.Size = new System.Drawing.Size(370, 42);
-            this.panel2.TabIndex = 13;
-            // 
-            // cbInput
-            // 
-            this.cbInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.cbInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.cbInput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbInput.Font = new System.Drawing.Font("나눔고딕코딩", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.cbInput.FormattingEnabled = true;
-            this.cbInput.ItemHeight = 15;
-            this.cbInput.Location = new System.Drawing.Point(6, 6);
-            this.cbInput.Name = "cbInput";
-            this.cbInput.Size = new System.Drawing.Size(358, 23);
-            this.cbInput.TabIndex = 11;
-            this.cbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.comboBox1_KeyUp);
-            // 
-            // splitter1
-            // 
-            this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.splitter1.Location = new System.Drawing.Point(367, 0);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 402);
-            this.splitter1.TabIndex = 14;
-            this.splitter1.TabStop = false;
-            // 
             // seqMonitoring
             // 
             this.seqMonitoring.ProgressInterval = 100;
@@ -199,7 +186,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(656, 526);
+            this.ClientSize = new System.Drawing.Size(421, 526);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.propGrid);
@@ -209,6 +196,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "ComPort";
             this.Text = "COM Port";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ComPort_FormClosing);
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -223,7 +211,6 @@
         protected System.IO.Ports.SerialPort serialPort;
         protected Sequence seqMonitoring;
         protected System.Windows.Forms.Button btnSettings;
-        protected System.Windows.Forms.Button btnClose;
         protected StateButton btnMonitoring;
         protected StateButton btnConnected;
         protected System.Windows.Forms.ListBox listBox;

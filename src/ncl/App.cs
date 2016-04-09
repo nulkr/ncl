@@ -7,6 +7,7 @@ using log4net.Config;
 using System.Threading;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace ncl
 {
@@ -25,16 +26,28 @@ namespace ncl
                 XmlConfigurator.Configure();
         }
 
-        public static bool Exists(string ID)
+        public static bool Exists(string ID, out Mutex mutex)
         {
-            bool flagMutex;
+            bool createNew = false;
 
-            Mutex m_hMutex = new Mutex(true, ID, out flagMutex); // create mutex
-
-            if (!flagMutex) // check mutex
+            mutex = new Mutex(true, ID, out createNew);
+            
+            if (!createNew)
+            {
                 MsgBox.Error("Application already started!");
 
-            return !flagMutex;
+                Process current = Process.GetCurrentProcess();
+                foreach (Process process in Process.GetProcessesByName(current.ProcessName))
+                {
+                    if (process.Id != current.Id)
+                    {
+                        WinApi.SetForegroundWindow(process.MainWindowHandle);
+                        break;
+                    }
+                }
+            }
+
+            return !createNew;            
         }
 
         /// get exe application names

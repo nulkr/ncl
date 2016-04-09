@@ -1,4 +1,4 @@
-﻿namespace j2kTestEquipment
+﻿namespace exEquipment
 {
     partial class ComTest
     {
@@ -35,12 +35,17 @@
             // 
             this.seqMonitoring.OnWork += new System.ComponentModel.DoWorkEventHandler(this.seqMonitoring_OnWork);
             // 
+            // btnSettings
+            // 
+            this.btnSettings.Location = new System.Drawing.Point(306, 6);
+            this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
+            // 
             // btnMonitoring
             // 
             this.btnMonitoring.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnMonitoring.BackgroundImage")));
             this.btnMonitoring.StateProp.BorderColor = System.Drawing.Color.Gray;
             this.btnMonitoring.StateProp.ChangeImage = false;
-            this.btnMonitoring.StateProp.ColorSet = j2k.StateColorSet.Green;
+            this.btnMonitoring.StateProp.ColorSet = ncl.StateColorSet.Green;
             this.btnMonitoring.StateProp.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.btnMonitoring.StateProp.OffColor1 = System.Drawing.Color.White;
             this.btnMonitoring.StateProp.OffColor2 = System.Drawing.SystemColors.Control;
@@ -54,7 +59,7 @@
             this.btnConnected.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnConnected.BackgroundImage")));
             this.btnConnected.StateProp.BorderColor = System.Drawing.Color.Gray;
             this.btnConnected.StateProp.ChangeImage = false;
-            this.btnConnected.StateProp.ColorSet = j2k.StateColorSet.Green;
+            this.btnConnected.StateProp.ColorSet = ncl.StateColorSet.Green;
             this.btnConnected.StateProp.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.btnConnected.StateProp.OffColor1 = System.Drawing.Color.White;
             this.btnConnected.StateProp.OffColor2 = System.Drawing.SystemColors.Control;
@@ -66,12 +71,20 @@
             // listBox
             // 
             this.listBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
-            this.listBox.Size = new System.Drawing.Size(656, 522);
+            this.listBox.Size = new System.Drawing.Size(432, 522);
+            // 
+            // propGrid
+            // 
+            this.propGrid.Location = new System.Drawing.Point(146, 0);
+            // 
+            // cbInput
+            // 
+            this.cbInput.Size = new System.Drawing.Size(134, 23);
             // 
             // ComTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
-            this.ClientSize = new System.Drawing.Size(656, 526);
+            this.ClientSize = new System.Drawing.Size(432, 526);
             this.Name = "ComTest";
             this.ResumeLayout(false);
 

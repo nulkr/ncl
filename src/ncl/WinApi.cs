@@ -32,16 +32,16 @@ namespace ncl
         public const int SW_SHOWNORMAL = 1; // Activates and displays a window. If the window is minimized or maximized, the system restores it to its original size and position. An application should specify this flag when displaying the window for the first time.</para>
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int ShowWindow(int nHandle, int nCmd);
+        public static extern int ShowWindow(IntPtr nHandle, int nCmd);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int SetForegroundWindow(int nHandle);
+        public static extern int SetForegroundWindow(IntPtr nHandle);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int SetActiveWindow(int nHandle);
+        public static extern int SetActiveWindow(IntPtr nHandle);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int SetWindowPos(int nHandle, int nHandlwInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+        public static extern int SetWindowPos(IntPtr nHandle, IntPtr nHandlwInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr WindowFromPoint(System.Drawing.Point pt);

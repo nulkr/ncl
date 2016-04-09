@@ -11,6 +11,13 @@ using System.Drawing.Imaging;
 using System.Xml.Serialization;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using System.Globalization;
+using System.Reflection;
+using System.ComponentModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+using System.IO.Compression;
+using Newtonsoft.Json.Serialization;
 
 //http://stackoverflow.com/questions/1142802/how-to-use-localization-in-c-sharp
 namespace ncl
@@ -217,6 +224,13 @@ namespace ncl
             return new System.IO.FileInfo(GetFile(sRelativeFileName));
         }
 
+        /// 같은 파일인지 체크
+        /// 
+        public static bool SameFileName(string file1, string file2)
+        {
+            return file1.Equals(file2, StringComparison.OrdinalIgnoreCase);
+        }
+
         #endregion
 
         #region Math
@@ -342,7 +356,7 @@ namespace ncl
 
         #endregion
 
-        #region classes
+        #region file i/o
 
         public static object LoadObjectFromJson(Type type, string filename)
         {
@@ -351,13 +365,112 @@ namespace ncl
             using (var fs = new FileStream(filename, FileMode.Open))
                 return (new DataContractJsonSerializer(type)).ReadObject(fs);
         }
-        public static void SaveObjectToJson(object o, string filename)
+
+        /// This method accepts two strings the represent two files to 
+        /// compare. A return value of 0 indicates that the contents of the files
+        /// are the same. A return value of any other value indicates that the 
+        /// files are not the same.
+        /// https://support.microsoft.com/ko-kr/kb/320348
+        public static bool FileCompare(string file1, string file2)
         {
-            using (var fs = new FileStream(filename, FileMode.Create))
-                (new DataContractJsonSerializer(o.GetType())).WriteObject(fs, o);
+            int file1byte;
+            int file2byte;
+            FileStream fs1;
+            FileStream fs2;
+
+            // Determine if the same file was referenced two times.
+            if (file1 == file2)
+            {
+                // Return true to indicate that the files are the same.
+                return true;
+            }
+
+            // Open the two files.
+            fs1 = new FileStream(file1, FileMode.Open);
+            fs2 = new FileStream(file2, FileMode.Open);
+
+            // Check the file sizes. If they are not the same, the files 
+            // are not the same.
+            if (fs1.Length != fs2.Length)
+            {
+                // Close the file
+                fs1.Close();
+                fs2.Close();
+
+                // Return false to indicate files are different
+                return false;
+            }
+
+            // Read and compare a byte from each file until either a
+            // non-matching set of bytes is found or until the end of
+            // file1 is reached.
+            do
+            {
+                // Read one byte from each file.
+                file1byte = fs1.ReadByte();
+                file2byte = fs2.ReadByte();
+            }
+            while ((file1byte == file2byte) && (file1byte != -1));
+
+            // Close the files.
+            fs1.Close();
+            fs2.Close();
+
+            // Return the success of the comparison. "file1byte" is 
+            // equal to "file2byte" at this point only if the files are 
+            // the same.
+            return ((file1byte - file2byte) == 0);
         }
         #endregion
     }
 
-  
+    public static class JsonFile
+    {
+
+        public static void Load<T>(ref T o, string fileName)
+        {
+            using (var r = File.OpenText(fileName))
+            {
+                // Copy 하면서 private member 가 null 로 덮어 써지므로 public readonly 하거나 JsonProperty 로 포함시켜야 함
+                o = JsonConvert.DeserializeObject<T>(r.ReadToEnd());
+            }
+        }
+        public static void LoadBson<T>(ref T o, string fileName)
+        {
+            using (var fs = new FileStream(fileName, FileMode.Open))
+            using (BsonReader reader = new BsonReader(fs))
+                o = (new JsonSerializer()).Deserialize<T>(reader);
+        }
+        public static void LoadCompressed<T>(ref T o, string fileName)
+        {
+            using (var fs = new FileStream(fileName, FileMode.Open))
+            using (var deflate = new DeflateStream(fs, CompressionMode.Decompress))
+            using (var reader = new BinaryReader(deflate))
+            {
+                o = JsonConvert.DeserializeObject<T>(reader.ReadString());
+            }
+        }
+        public static void Save(object o, string fileName, Newtonsoft.Json.Formatting formatting = Formatting.None)
+        {
+            using (StreamWriter file = File.CreateText(fileName))
+                file.Write(JsonConvert.SerializeObject(o, formatting));
+        }
+        public static void SaveBson(object o, string fileName)
+        {
+            using (var fs = new FileStream(fileName, FileMode.Create))
+            using (var bw = new BsonWriter(fs))
+            {
+                (new JsonSerializer()).Serialize(bw, o);
+            }
+        }
+        public static void SaveCompressed(object o, string fileName)
+        {
+            using (var fs = new FileStream(fileName, FileMode.Create))
+            using (var deflate = new DeflateStream(fs, CompressionMode.Compress))
+            using (var writer = new BinaryWriter(deflate))
+            {
+                writer.Write(JsonConvert.SerializeObject(o));
+            }
+        }
+    }
 }

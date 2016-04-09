@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using j2k;
+using ncl;
+using System.Threading;
+using System.Diagnostics;
 
-namespace j2kTestEquipment
+namespace exEquipment
 {
     static class Program
     {
@@ -14,11 +16,36 @@ namespace j2kTestEquipment
         [STAThread]
         static void Main()
         {
-            if (App.Exists("j2kTestEquipment")) return;
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(EQ.MainForm = new FrmMain());
+            //bool createdNew = true;
+            //using (Mutex mutex = new Mutex(true, "exEquipment_123456789_fqgqgwqgw", out createdNew))
+            //{
+            //    if (createdNew)
+            //    {
+            //        Application.EnableVisualStyles();
+            //        Application.SetCompatibleTextRenderingDefault(false);
+            //        Application.Run(EQ.MainForm = new FrmMain());
+            //    }
+            //    else
+            //    {
+            //        Process current = Process.GetCurrentProcess();
+            //        foreach (Process process in Process.GetProcessesByName(current.ProcessName))
+            //        {
+            //            if (process.Id != current.Id)
+            //            {
+            //                WinApi.SetForegroundWindow(process.MainWindowHandle);
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
+            Mutex mutex;
+            if (!App.Exists("exEquipment", out mutex))
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(EQ.MainForm = new FrmMain());
+            }
+            mutex.Close();
         }
     }
 }

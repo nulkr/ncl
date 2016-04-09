@@ -6,9 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using j2k;
+using ncl;
 
-namespace j2kTestEquipment
+namespace exEquipment
 {
     public partial class FrmAuto : Form
     {
