@@ -10,7 +10,7 @@ namespace ncl
     namespace Equipment
     {
         /// Recipe PropertyDescriptor Class for PropertyGrid
-        /// http://www.codeproject.com/Articles/9280/Add-Remove-Items-to-from-PropertyGrid-at-Runtime
+        /// http://www.codeproject.com/Articles/9280/Add-Remove-_Items-to-from-PropertyGrid-at-Runtime
         public class RecipePropertyDescriptor : PropertyDescriptor
         {
             #region field

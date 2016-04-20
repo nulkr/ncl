@@ -13,29 +13,17 @@ namespace ncl
 {
     namespace Equipment
     {
-        [DataContractAttribute()]
         public class AlarmItem
         {
-            #region field
-
-            [DataMemberAttribute(Name = "Code")]
             private int _Code;
 
-            [DataMemberAttribute()]
-            public Bitmap Bitmap = null;
+            public string Title, Category, Text, Module, ImgFile;
 
-            [DataMemberAttribute()]
-            public string Title, Category, Text, Module;
-
-            [DataMemberAttribute()]
             public int Severity;
 
             public int Code { get { return _Code; } }
-            #endregion
 
-            #region constructor
-
-            public AlarmItem(int code, string title = "", string category = "", string txt = "", string module = "", int severity = 0, int imgIndex = -1)
+            public AlarmItem(int code, string title = "", string category = "", string txt = "", string module = "", int severity = 0, string imgFile = "")
             {
                 _Code = code;
                 Title = title;
@@ -43,67 +31,53 @@ namespace ncl
                 Text = txt;
                 Module = module;
                 Severity = severity;
+                ImgFile = imgFile;
             }
-            #endregion
         }
 
-        [DataContractAttribute()]
         public class Alarms
         {
-            #region constant
-
             public const int BUFFER_COUNT = 32;
             public const int ALARM_COUNT = 1000;
 
-            #endregion
+            public readonly DataInfo DataInfo = new DataInfo(1, "ncl.Equipment.Alarms");
 
-            #region field
+            public string ImgPath = "";
 
-            [DataMemberAttribute()]
-            public readonly DataInfo DataInfo = new DataInfo(1, "ncl AlarmList");
-
-            [DataMemberAttribute(Name = "AlarmList")]
             AlarmItem[] _Array = new AlarmItem[ALARM_COUNT];
 
             public volatile int[] Buffers = new int[BUFFER_COUNT];
 
             public Form AlarmForm = null;
-            #endregion
 
-            #region property
-
-            public AlarmItem this[int code]
-            {
-                get { return _Array[code]; }
-            }
+            public AlarmItem this[int code] { get { return _Array[code]; } }
 
             public bool AlarmExists { get { return Buffers[0] != 0; } }
-            #endregion
 
-            #region constructor
-
-            public Alarms()
+            public Alarms(string imgPath = "")
             {
                 for (int i = 0; i < ALARM_COUNT; i++)
                     _Array[i] = new AlarmItem(i);
 
                 for (int i = 0; i < BUFFER_COUNT; i++)
                     Buffers[i] = 0;
-            }
-            #endregion
 
-            #region method
+                if (imgPath == "")
+                    ImgPath = App.Path;
+                else
+                    ImgPath = imgPath;
+            }
 
             public void LoadFromCSV(string filename, char seperator = '|')
             {
                 foreach (AlarmItem item in _Array)
                 {
-                    item.Bitmap.Dispose();
                     item.Category = "";
                     item.Text = "";
                     item.Module = "";
                     item.Severity = 0;
                     item.Title = "";
+                    item.ImgFile = "";
                 }
 
                 using (StreamReader reader = new StreamReader(filename))
@@ -111,21 +85,28 @@ namespace ncl
                     string sLine;
                     while ((sLine = reader.ReadLine()) != null)
                     {
+                        sLine.Trim();
+
                         // ignore comment
                         if (sLine.IndexOf("//") == 0) continue;
                         if (sLine.IndexOf(';') == 0) continue;
 
                         string[] words = sLine.Split(seperator);
-                        if (words.Length < 7) continue;
+                        if (words.Length < 1) continue;
 
-                        int code = Convert.ToInt32(words[0]);
+                        int code = -1;
+                        if (!int.TryParse(words[0], out code) || code >= ALARM_COUNT || code < 0) continue;
 
-                        this[code].Title = words[1];
-                        this[code].Category = words[2];
-                        this[code].Text = words[3];
-                        this[code].Module = words[4];
-                        this[code].Severity = Convert.ToInt32(words[5]);
-                        this[code].Bitmap = Utils.StrToBitmap(words[6]);
+                        for (int i = 1; i < words.Length; i++)
+                            switch (i)
+                            {
+                                case 1: this[code].Title = words[1].Trim(); break;
+                                case 2: this[code].Category = words[2].Trim(); break;
+                                case 3: this[code].Text = words[3].Trim(); break;
+                                case 4: this[code].Module = words[4].Trim(); break;
+                                case 5: this[code].Severity = Convert.ToInt32(words[5]); break;
+                                case 6: this[code].ImgFile = words[6].Trim(); break;
+                            }
                     }
 
                     reader.Close();
@@ -137,18 +118,17 @@ namespace ncl
                 {
                     writer.WriteLine("//------------------------------------------------------------------------------");
                     writer.WriteLine("// Error Code Text File");
-                    writer.WriteLine("//   - Automatically created by NUL (ncl.Alarms)");
+                    writer.WriteLine("//   - created by Nulkr (ncl.Equipment.Alarms)");
                     writer.WriteLine("//   - " + DateTime.Now.ToString("yyyy-MM-dd hh:nn:ss"));
                     writer.WriteLine("//");
-                    writer.WriteLine("// Code | Title | Category | Text | Module | Severity | ImageData");
+                    writer.WriteLine("// Code | Title | Category | Text | Module | Severity | ImageFile");
                     writer.WriteLine("//");
 
-                    string fmt = "{0} " + seperator + " {1} " + seperator + " {2} " + seperator + " {3} " + seperator + " {4} " + seperator + " {5} " + seperator + " {6} " + seperator + " {7} " + seperator + " {8}";
+                    string fmt = "{0,4:D4} " + seperator + " {1} " + seperator + " {2} " + seperator + " {3} " + seperator + " {4} " + seperator + " {5} " + seperator + " {6}";
 
                     foreach (AlarmItem item in _Array)
                     {
-                        string sImg = Utils.BitmapToStr(item.Bitmap);
-                        string sLine = String.Format(fmt, item.Code, item.Title, item.Category, item.Text, item.Module, item.Severity, sImg);
+                        string sLine = String.Format(fmt, item.Code, item.Title, item.Category, item.Text, item.Module, item.Severity, item.ImgFile);
 
                         writer.WriteLine(sLine);
                     }
@@ -222,7 +202,6 @@ namespace ncl
                         break;
                     }
             }
-            #endregion
         }
     }
 }

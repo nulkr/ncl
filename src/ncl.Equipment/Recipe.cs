@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.IO.Compression;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Bson;
-using Newtonsoft.Json.Linq;
 
 namespace ncl
 {
@@ -19,8 +14,7 @@ namespace ncl
         {
             None    = 0x0000,
             Fixed   = 0x0001,	// symbol = !
-            Param   = 0x0002,   // symbol = *
-            CIM     = 0x0004,	// symbol = @
+            CIM     = 0x0002,	// symbol = @
             PMAC    = 0x0010,   // symbol = D
             PLC     = 0x0020,   // sympol = P
             AJIN    = 0x0040,   // sympol = A
@@ -34,25 +28,16 @@ namespace ncl
         {
             public double Value = 0;
             public string Text = "";
-
-            [JsonIgnore]
-            //[JsonConverter(typeof(StringEnumConverter))]
             public RecipeKindFlag Kind;
-
-            [JsonIgnore]
             public string Category = "";
-
-            [JsonIgnore]
             public string Comment = "";
-
-            [JsonIgnore]
+            
             public string Symbols
             {
                 get
                 {
                     string s = "";
                     if ((Kind & RecipeKindFlag.Fixed) > 0) s += '!';
-                    if ((Kind & RecipeKindFlag.Param) > 0) s += '*';
                     if ((Kind & RecipeKindFlag.CIM) > 0) s += '@';
                     if ((Kind & RecipeKindFlag.PMAC) > 0) s += 'D';
                     if ((Kind & RecipeKindFlag.PLC) > 0) s += 'P';
@@ -69,7 +54,6 @@ namespace ncl
                         switch (c)
                         {
                             case '!': Kind |= RecipeKindFlag.Fixed; break;
-                            case '*': Kind |= RecipeKindFlag.Param; break;
                             case '@': Kind |= RecipeKindFlag.CIM; break;
                             case 'D': Kind |= RecipeKindFlag.PMAC; break;
                             case 'P': Kind |= RecipeKindFlag.PLC; break;
@@ -81,14 +65,12 @@ namespace ncl
                 }
             }
 
-            [JsonIgnore]
             public int AsInt
             {
                 get { return (int)Math.Round(Value); }
                 set { Value = value; }
             }
 
-            [JsonIgnore]
             public bool AsBool
             {
                 get { return AsInt != 0; }
@@ -106,28 +88,41 @@ namespace ncl
 
         public class Recipe
         {
-            private readonly char[] PMAC_PREFIX = {'M', 'I', 'Q', 'P'};
+            private readonly char[] PMAC_PREFIX = { 'M', 'I', 'Q', 'P' };
             private MemoryStream _BackupStream;
-            private BsonReader _BackupReader;
-            private BsonWriter _BackupWriter;
-
-            public readonly string FixedRcpFile;
 
             public readonly DataInfo DataInfo = new DataInfo(1, "ncl.Equipment Recipe"); // 항상 최신 버전을 가지고 있어야 하므로 readonly
 
+            public string FixedRcpFile;
+
             public Dictionary<string, RecipeItem> Items = new Dictionary<string, RecipeItem>();
 
-            #region property 
-
-            [JsonIgnore]
             public RecipeItem this[string key]
             {
-                get { return Items[key]; }
-                set { Items[key] = value; }
+                get 
+                { 
+                    try
+                    {
+                        return Items[key]; 
+                    }
+                    catch (Exception ex)
+                    {
+                        MsgBox.Error(ex.Message);
+                        return new RecipeItem();
+                    }
+                }
+                set
+                {
+                    try
+                    {
+                        Items[key] = value;
+                    }
+                    catch (Exception ex)
+                    {
+                        MsgBox.Error(ex.Message);
+                    }
+                }
             }
-            #endregion
-
-            #region constructor
 
             public Recipe(string fixedRcpFile = "")
             {
@@ -137,11 +132,7 @@ namespace ncl
                     FixedRcpFile = fixedRcpFile;
 
                 _BackupStream = new MemoryStream();
-                _BackupReader = new BsonReader(_BackupStream);
-                _BackupWriter = new BsonWriter(_BackupStream);
-
             }
-            #endregion
 
             public event ReadBinaryEventHandler OnReadBinary;
             public event WriteBinaryEventHandler OnWriteBinary;
@@ -209,7 +200,7 @@ namespace ncl
                                 item.Category = words[i].Trim();
                                 break;
                             case 2:
-                                item.Value = Convert.ToDouble(words[i]);
+                                double.TryParse(words[i], out item.Value); 
                                 break;
                             case 3:
                                 item.Comment = words[i].Trim();
@@ -259,7 +250,7 @@ namespace ncl
                     {
                         switch (i)
                         {
-                            case 1: item.Value = Convert.ToDouble(words[i]); break;
+                            case 1: double.TryParse(words[i], out item.Value); break;
                             case 2: item.Text = words[i].Trim(); break;
                             case 3: item.Category = words[i].Trim(); break;
                             case 4: item.Comment = words[i].Trim(); break;
@@ -284,37 +275,48 @@ namespace ncl
                 }
             }
 
+            public virtual void ReadAddtionalBianry(BinaryReader r, int verNo)
+            {
+            }
+
             public void LoadFromStream(Stream stream, bool isFixedFile)
             {
-                using (var d = new DeflateStream(stream, CompressionMode.Decompress))
-                using (var r = new BinaryReader(d))
+                using (var r = new BinaryReader(stream))
                 {
-                    Recipe tmp = JsonConvert.DeserializeObject<Recipe>(r.ReadString());
+                    int verNo = r.ReadInt32();
+                    string verTxt = r.ReadString();
 
-                    foreach (var item in tmp.Items)
+                    int cnt = r.ReadInt32();
+                    for (int i = 0; i < cnt; i++)
                     {
-                        if (Items.ContainsKey(item.Key)) // Schema 에 존재
-                        {
-                            RecipeItem ri = Items[item.Key];
+                        string key = r.ReadString();
+                        double val = r.ReadDouble();
+                        string txt = r.ReadString();
 
+                        if (Items.ContainsKey(key)) // Schema 에 존재
+                        {
+                            RecipeItem ri = Items[key];
+                            
                             if (isFixedFile && !ri.Kind.HasFlag(RecipeKindFlag.Fixed)) // Fixed 체크
                                 continue;
 
-                            if (ri.Kind.HasFlag(RecipeKindFlag.Param)) // Param만
-                            {
-                                ri.Value = item.Value.Value; // Value 는 항시 적용
-
-                                if (ri.Kind.HasFlag(RecipeKindFlag.String)) // TEXT 는 String Type 일때만 적용, TEXT에 ADDRESS 정보도 들어가기 때문
-                                    Items[item.Key].Text = item.Value.Text;
-                            }
+                            ri.Value = val; // Value 는 항시 적용
+                            if (ri.Kind.HasFlag(RecipeKindFlag.String)) // TEXT 는 String Type 일때만 적용, TEXT에 ADDRESS 정보도 들어가기 때문
+                                Items[key].Text = txt;
                         }
                     }
 
-                    if (!isFixedFile && OnReadBinary != null) // FixedRcpFile 가 아닌 경우만 추가 데이터를 읽는다
-                        OnReadBinary(this, new ReadBinaryEventArgs(r, tmp.DataInfo.VersionNo)); // Fixed Data 읽기
-                    
                     if (isFixedFile) // Fixed Data 를 읽어오는 시점에 백업한다
                         Backup(stream);
+                    else 
+                    {
+                        // additional fixed data 는 별도의 파일로 읽어하자
+                        // FixedRcpFile 가 아닌 경우만 추가 데이터를 읽는다
+                        ReadAddtionalBianry(r, verNo);
+
+                        if (OnReadBinary != null) 
+                            OnReadBinary(this, new ReadBinaryEventArgs(r, verNo)); // Fixed Data 읽기
+                    }
                 }
             }
 
@@ -332,18 +334,36 @@ namespace ncl
                 }
             }
 
+            public void WriteAddtionalBianry(BinaryWriter w)
+            {
+            }
+
             public void SaveToStream(Stream stream, bool isFixedFile)
             {
-                using (var d = new DeflateStream(stream, CompressionMode.Compress))
-                using (var w = new BinaryWriter(d))
+                using (var w = new BinaryWriter(stream))
                 {
-                    w.Write(JsonConvert.SerializeObject(this));
+                    w.Write(DataInfo.VersionNo);
+                    w.Write(DataInfo.Description);
 
-                    if (!isFixedFile && OnWriteBinary != null) // FixedRcpFile 가 아닌 경우만 추가 데이터를 파일에 쓴다
-                        OnWriteBinary(this, new WriteBinaryEventArgs(w));
+                    w.Write(Items.Count);
+                    foreach (var kvp in Items)
+                    {
+                        w.Write(kvp.Key);
+                        w.Write(kvp.Value.Value);
+                        w.Write(kvp.Value.Text);
+                    }
 
                     if (isFixedFile) // Fixed Data 를 저장하는 시점에 백업한다
                         Backup(stream);
+                    else 
+                    {
+                        // additional fixed data 는 별도의 파일로 저장하자
+                        // FixedRcpFile 가 아닌 경우만 추가 데이터를 파일에 쓴다
+                        WriteAddtionalBianry(w);
+
+                        if (OnWriteBinary != null) 
+                            OnWriteBinary(this, new WriteBinaryEventArgs(w));
+                    }
                 }
             }
 
@@ -355,10 +375,10 @@ namespace ncl
                 using (var f = new FileStream(filename, FileMode.Create))
                 {
                     SaveToStream(f, isFixedFile);
-
-                    if (!isFixedFile)
-                        Save(FixedRcpFile); // Fixed Data 저장
                 }
+
+                if (!isFixedFile)
+                    Save(FixedRcpFile); // Fixed Data 저장
             }
 
             // 내부 Backup Buffer 로부터 데이터를 읽어온다
@@ -531,7 +551,7 @@ namespace ncl
             /// Recipe -> Child Control
             /// <param name="ctrlParent"></param>
             /// <param name="kind"></param>
-            public void AssignToControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.Param)
+            public void AssignToControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.None)
             {
                 foreach (Control ctrl in ctrlParent.Controls)
                 {
@@ -563,7 +583,7 @@ namespace ncl
             /// Child Control -> Recipe
             /// <param name="ctrlParent"></param>
             /// <param name="kind"></param>
-            public void AssignFromControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.Param)
+            public void AssignFromControls(Control ctrlParent, RecipeKindFlag kind = RecipeKindFlag.None)
             {
                 foreach (Control ctrl in ctrlParent.Controls)
                 {

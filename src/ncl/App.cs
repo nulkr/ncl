@@ -13,15 +13,13 @@ namespace ncl
 {
     public static class App
     {
-        private static readonly string LOG4NET_XML_FILE = "ncl-log4net.xml";
-
         public static readonly ILog Logger = log4net.LogManager.GetLogger(typeof(App));
 
-        public static void Init()
+        public static void InitLogger(string xmlFile = "ncl-log4net.xml")
         {
             // 파일이 존재하면 파일로 설정
-            if (File.Exists(LOG4NET_XML_FILE))
-                XmlConfigurator.Configure(new System.IO.FileInfo(LOG4NET_XML_FILE));
+            if (File.Exists(xmlFile))
+                XmlConfigurator.Configure(new System.IO.FileInfo(xmlFile));
             else // 파일이 없으면 App.Config로 설정
                 XmlConfigurator.Configure();
         }
@@ -56,7 +54,12 @@ namespace ncl
         {
             get { 
                 string exeName = ExeName;
-                return exeName.Substring(0, exeName.IndexOf('.')); 
+
+                int index = exeName.IndexOf('.');
+                if (index < 1)
+                    return exeName;
+                else
+                    return exeName.Substring(0, index); 
             }
         }
         public static string ExeName

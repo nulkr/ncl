@@ -11,65 +11,37 @@ namespace ncl
 {
     namespace Equipment
     {
-        [DataContractAttribute()]
         public class DIOItem
         {
-            #region field
-
-            [DataMemberAttribute()]
             public int CardIndex = 0;
-
-            [DataMemberAttribute()]
             public int BitIndex = 0;
-
-            [DataMemberAttribute()]
             public string Text = "";
-
-            [DataMemberAttribute()]
             public string Category = "";
-
-            [DataMemberAttribute()]
             public string Comment = "";
-            #endregion
         }
 
-
         // XDatas, YDatas array 의 값은 별도의 쓰레드에서 한번에 읽고 쓰자
-        [DataContractAttribute()]
         public class DIOList
         {
-            #region field
-
-            [DataMemberAttribute()]
-            public readonly DataInfo DataInfo = new DataInfo(1, "ncl DIOList");
+            public readonly DataInfo DataInfo = new DataInfo(1, "ncl.Equipment.DIOs");
 
             public volatile bool NeedWriting = false;
 
-            [DataMemberAttribute(Name = "CardCount")]
             private int _CardCount = 32;
-
-            [DataMemberAttribute(Name = "BitCount")]
             private int _BitCount = 32;
 
-            [DataMemberAttribute()]
             public Dictionary<string, DIOItem> XItems = new Dictionary<string, DIOItem>();
-
-            [DataMemberAttribute()]
             public Dictionary<string, DIOItem> YItems = new Dictionary<string, DIOItem>();
 
             public volatile UInt32[] XDatas = null;
             public volatile UInt32[] YDatas = null;
-            #endregion
-
-            #region property
 
             public int CardCount { get { return _CardCount; } }
             public int BitCount { get { return _BitCount; } }
-            #endregion
 
             #region constructor
 
-            public DIOList(int cardCount = 32, int bitCount = 32)
+            public DIOList(int cardCount = 32, int bitCount = 16)
             {
                 _CardCount = cardCount;
                 _BitCount = bitCount;
@@ -168,7 +140,13 @@ namespace ncl
 
                         DIOItem item = new DIOItem();
                         string key = sNameAndText[0];
-                        item.CardIndex = no / 200; // TODO : 32 개씩 잘랐을 경우 no /100 해야 함
+
+                        // 32 개씩 잘랐을 경우 no /100 해야 함
+                        if (_BitCount == 32)
+                            item.CardIndex = no / 200; 
+                        else
+                            item.CardIndex = no / 100;
+
                         item.BitIndex = no % 50;
 
                         if (words.Length > 1)
@@ -176,6 +154,7 @@ namespace ncl
                         if (words.Length > 2)
                             item.Comment = words[2].Trim();
 
+                        // TODO : Check exists key
                         if ((no % 100) < 50)
                             XItems.Add(key, item);
                         else
@@ -186,6 +165,93 @@ namespace ncl
                 }
             }
 
+            public void LoadCsvSchema(string filename, char seperator = '|')
+            {
+                XItems.Clear();
+                YItems.Clear();
+
+                using (StreamReader r = new StreamReader(filename))
+                {
+                    string sLine;
+                    while ((sLine = r.ReadLine()) != null)
+                    {
+                        sLine.Trim();
+                        if (string.IsNullOrEmpty(sLine)) continue;
+
+                        // check X, Y
+                        bool isX = sLine.IndexOf('X') == 0 || sLine.IndexOf('x') == 0;
+                        bool isY = sLine.IndexOf('Y') == 0 || sLine.IndexOf('y') == 0;
+
+                        if (!isX && !isY) continue;
+
+                        string[] words = sLine.Split(seperator);
+
+                        // check no & name
+                        if (words.Length < 2)
+                        {
+                            MsgBox.Error("IOList Parsing Error - \n" + sLine);
+                            continue;
+                        }
+
+                        int no;
+                        if (!int.TryParse(words[0].Substring(1, words[0].Length - 1).Trim(), out no))
+                        {
+                            MsgBox.Error("IOList Parsing Error - \n" + sLine);
+                            continue;
+                        }
+
+                        int cardIndex = no / 100;
+                        int bitIndex = no % 100;
+
+                        if (!Utils.InRange(cardIndex, 0, _CardCount - 1) || !Utils.InRange(bitIndex, 0, _BitCount - 1))
+                        {
+                            MsgBox.Error("IOList Invalid NO - \n" + sLine);
+                            continue;
+                        }
+
+                        DIOItem item = new DIOItem();
+                        item.CardIndex = cardIndex;
+                        item.BitIndex = bitIndex;
+                        item.Text = words[1].Trim(); // Text 지정이 안되었으면 Name을 사용
+
+                        string key = item.Text;
+
+                        for (int i = 2; i < words.Length; i++)
+                            switch(i)
+                            {
+                                case 2: item.Text = words[i].Trim(); break;
+                                case 3: item.Category = words[i].Trim(); break;
+                                case 4: item.Comment = words[i].Trim(); break;
+                            }
+
+                        if (isX)
+                            XItems.Add(key, item);
+                        else
+                            YItems.Add(key, item);
+                    }
+                }
+            }
+            public void SaveCsvSchema(string filename, char seperator = '|')
+            {
+                using (StreamWriter w = new System.IO.StreamWriter(filename))
+                {
+                    w.WriteLine("----------------------------------------------------------------");
+                    w.WriteLine("DIO List File");
+                    w.WriteLine("  - created by Nulkr (ncl.Equipment.DIOs)");
+                    w.WriteLine("  - " + DateTime.Now.ToString("yyyy-MM-dd hh:nn:ss"));
+                    w.WriteLine("----------------------------------------------------------------");
+                    w.WriteLine(" NO   | Name                 | Text       | Category   | Comment");
+                    w.WriteLine("----------------------------------------------------------------");
+
+                    string xFmt = "X{0,4:D4} " + seperator + " {1,-20} " + seperator + " {2,-10} " + seperator + " {3,-10} " + seperator + " {4}";
+                    string yFmt = "Y{0,4:D4} " + seperator + " {1,-20} " + seperator + " {2,-10} " + seperator + " {3,-10} " + seperator + " {4}";
+
+                    foreach (var kvp in XItems)
+                        w.WriteLine(String.Format(xFmt, kvp.Value.CardIndex * 100 + kvp.Value.BitIndex, kvp.Key, kvp.Value.Text, kvp.Value.Category, kvp.Value.Comment));
+                    foreach (var kvp in YItems)
+                        w.WriteLine(String.Format(yFmt, kvp.Value.CardIndex * 100 + kvp.Value.BitIndex, kvp.Key, kvp.Value.Text, kvp.Value.Category, kvp.Value.Comment));
+                }
+            }
             #endregion
         }
 

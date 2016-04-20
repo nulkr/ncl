@@ -37,10 +37,11 @@ namespace ncl
                 action(args);
         }
 
-        /// Hide / Clase child forms
+        /// Hide / Close child forms
         /// 
         public static void HideChildForms(this Control ctrl)
         {
+            if (ctrl != null)
             foreach (Control f in ctrl.Controls)
             {
                 if (f is Form)
@@ -51,6 +52,7 @@ namespace ncl
         }
         public static void CloseChildForms(this Control ctrl)
         {
+            if (ctrl != null)
             foreach (Control f in ctrl.Controls)
             {
                 if (f is Form)
