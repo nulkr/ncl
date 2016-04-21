@@ -165,16 +165,18 @@ namespace ncl
             // 데이터 목록을 CSV 파일에 쓴다
             public void SaveToCsv(string filename, char seperator = '|')
             {
-                using (var fw = new StreamWriter(filename, false))
+                using (var w = new StreamWriter(filename, false))
                 {
-                    fw.WriteLine("{0} Ver {1}", DataInfo.Description, DataInfo.VersionNo);
-                    fw.WriteLine("------------------------------------------------------------------------------------------------------------");
-                    fw.WriteLine("No | Name                           |    cts/unit     | Min Speed | Max Speed | SW Limit (+) | SW Limit (-) ");
-                    fw.WriteLine("------------------------------------------------------------------------------------------------------------");
+                    w.WriteLine("------------------------------------------------------------------------------------------------------------");
+                    w.WriteLine(DataInfo.ToString());
+                    w.WriteLine(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"));
+                    w.WriteLine("------------------------------------------------------------------------------------------------------------");
+                    w.WriteLine("No | Name                           |    cts/unit     | Min Speed | Max Speed | SW Limit (+) | SW Limit (-) ");
+                    w.WriteLine("------------------------------------------------------------------------------------------------------------");
                     string fmt = "{0:D2} " + seperator + " {1,-30} " + seperator + " {2,15:0.000000} " + seperator + " {3,9} " + seperator + " {4,9} " + seperator + " {5,12} " + seperator + " {6,12}";
 
                     for (int i = 1; i < _MotorCount; i++)
-                        fw.WriteLine(string.Format(fmt, _Items[i].No, _Items[i].Name, _Items[i].CtsPerUnit, _Items[i].SpeedMin, _Items[i].SpeedMax, _Items[i].PosSwLimit, _Items[i].NegSwLimit));
+                        w.WriteLine(string.Format(fmt, _Items[i].No, _Items[i].Name, _Items[i].CtsPerUnit, _Items[i].SpeedMin, _Items[i].SpeedMax, _Items[i].PosSwLimit, _Items[i].NegSwLimit));
                 }
             }
 

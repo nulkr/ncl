@@ -114,15 +114,13 @@ namespace ncl
             }
             public void SaveToCSV(string filename, char seperator = '|')
             {
-                using (StreamWriter writer = new System.IO.StreamWriter(filename))
+                using (StreamWriter w = new System.IO.StreamWriter(filename))
                 {
-                    writer.WriteLine("//------------------------------------------------------------------------------");
-                    writer.WriteLine("// Error Code Text File");
-                    writer.WriteLine("//   - created by Nulkr (ncl.Equipment.Alarms)");
-                    writer.WriteLine("//   - " + DateTime.Now.ToString("yyyy-MM-dd hh:nn:ss"));
-                    writer.WriteLine("//");
-                    writer.WriteLine("// Code | Title | Category | Text | Module | Severity | ImageFile");
-                    writer.WriteLine("//");
+                    w.WriteLine("//------------------------------------------------------------------------------");
+                    w.WriteLine("// " + DataInfo.ToString());
+                    w.WriteLine("//");
+                    w.WriteLine("// Code | Title | Category | Text | Module | Severity | ImageFile");
+                    w.WriteLine("//");
 
                     string fmt = "{0,4:D4} " + seperator + " {1} " + seperator + " {2} " + seperator + " {3} " + seperator + " {4} " + seperator + " {5} " + seperator + " {6}";
 
@@ -130,10 +128,8 @@ namespace ncl
                     {
                         string sLine = String.Format(fmt, item.Code, item.Title, item.Category, item.Text, item.Module, item.Severity, item.ImgFile);
 
-                        writer.WriteLine(sLine);
+                        w.WriteLine(sLine);
                     }
-
-                    writer.Close();
                 }
             }
 

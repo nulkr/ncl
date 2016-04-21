@@ -224,7 +224,7 @@ namespace ncl
             }
 
             // CSV 파일을 Parsing 하여 데이터 목록을 얻고 Items에 추가 한다.
-            public void AddCsvSchema(string filename, char seperator = ',')
+            public void LoadCsvSchema(string filename, char seperator = ',')
             {
                 string s;
                 using (var fr = new StreamReader(filename))
@@ -264,14 +264,15 @@ namespace ncl
             // 데이터 목록을 CSV 파일에 쓴다
             public void SaveCsvSchema(string filename, char seperator = ',')
             {
-                using (var fw = new StreamWriter(filename, false))
+                using (var w = new StreamWriter(filename, false))
                 {
-                    fw.WriteLine("// {0} Ver {1}", DataInfo.Description, DataInfo.VersionNo);
+                    w.WriteLine("// " +DataInfo.ToString());
+                    w.WriteLine("// " + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"));
                     string fmt = "{0,-30}" + seperator + " {1,-10}" + seperator + " {2,-10}" + seperator + " {3,-20}" + seperator + " {4}" + seperator + " {5}";
-                    fw.WriteLine(fmt, "// Key", "Value", "Text", "Category", "Comment", "Symbols (!:Fixed *:Param @:CIM D:PMAC P:PLC A: AJIN B:Boolean #:Integer S:String)");
+                    w.WriteLine(fmt, "// Key", "Value", "Text", "Category", "Comment", "Symbols (!:Fixed *:Param @:CIM D:PMAC P:PLC A: AJIN B:Boolean #:Integer S:String)");
 
                     foreach (var kvp in Items)
-                        fw.WriteLine(string.Format(fmt, kvp.Key, kvp.Value.Value, kvp.Value.Text, kvp.Value.Category, kvp.Value.Comment, kvp.Value.Symbols));
+                        w.WriteLine(string.Format(fmt, kvp.Key, kvp.Value.Value, kvp.Value.Text, kvp.Value.Category, kvp.Value.Comment, kvp.Value.Symbols));
                 }
             }
 

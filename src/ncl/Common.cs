@@ -28,6 +28,11 @@ namespace ncl
             VersionNo = 1;
             Description = desc;
         }
+
+        public override string ToString()
+        {
+            return Description + " Ver " + VersionNo.ToString();
+        }
     }
 
     /// Serializable Dictionary

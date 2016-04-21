@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
+using System.Threading;
 
 namespace ncl
 {
@@ -19,7 +20,7 @@ namespace ncl
 
         private BackgroundWorker _Worker = null;
         private int _ErrorCode = 0;
-        private volatile int _SeqNo = 0;
+        private int _SeqNo = 0;
         #endregion
 
         #region property
@@ -28,7 +29,7 @@ namespace ncl
         public int ErrorCode { get { return _ErrorCode; } }
 
         [Browsable(false)]
-        public int SeqNo { get { return _SeqNo; } }
+        public int SeqNo { get { return _SeqNo; } set { Interlocked.Exchange(ref _SeqNo, value); } }
 
         [Browsable(false)]
         public SeqStatus Status
@@ -104,34 +105,34 @@ namespace ncl
                     if (args.Cancel)
                         return;
                 }
-                _SeqNo = nStartNo;
+                SeqNo = nStartNo;
                 _Worker.RunWorkerAsync();
             }
         }
         public void Abort()
         {
             _Worker.CancelAsync();
-            _SeqNo = -Math.Abs(_SeqNo);
+            SeqNo = -Math.Abs(_SeqNo);
         }
         public void Next()
         {
             if (_SeqNo == 1)
-                _SeqNo = 10;
+                SeqNo = 10;
             else if (_SeqNo > 0)
-                _SeqNo += 10;
+                SeqNo += 10;
         }
         public void Jump(int No)
         {
-            _SeqNo = No;
+            SeqNo = No;
         }
         public void Finish()
         {
-            _SeqNo = c_Completed;
+            SeqNo = c_Completed;
         }
         public void Error(int nErrCode)
         {
             _Worker.CancelAsync();
-            _SeqNo = -Math.Abs(_SeqNo);
+            SeqNo = -Math.Abs(_SeqNo);
             _ErrorCode = nErrCode;
         }
         public void Pause()
@@ -164,8 +165,6 @@ namespace ncl
 
                 while (_SeqNo > 0)
                 {
-                    int i = _SeqNo;
-
                     if (OnWork != null) OnWork(this, args);
 
                     if (_Worker.WorkerReportsProgress && tick < Environment.TickCount)
@@ -185,7 +184,7 @@ namespace ncl
             catch (Exception e)
             {
                 App.Logger.Fatal(e);
-                _SeqNo = -Math.Abs(_SeqNo);
+                SeqNo = -Math.Abs(_SeqNo);
                 _ErrorCode = c_ExceptErrorCode;
             }
         }
