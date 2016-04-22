@@ -1,9 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Text;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace ncl
 {
@@ -27,7 +26,8 @@ namespace ncl
             {Color.White,   SystemColors.Control,   Color.Lime,         Color.DarkGreen},
             {Color.White,   SystemColors.Control,   Color.Lavender,     Color.DodgerBlue}, // Start
             {Color.White,   SystemColors.Control,   Color.MistyRose,    Color.Red}}; // Red
-        #endregion
+
+        #endregion constant
 
         #region private field
 
@@ -48,8 +48,7 @@ namespace ncl
         private Brush _Brush1;
         private Brush _Brush2;
 
-
-        #endregion
+        #endregion private field
 
         #region private method
 
@@ -70,16 +69,16 @@ namespace ncl
                     _Owner.GetType().GetProperty("ImageIndex").SetValue(_Owner, 0, null);
             }
 
-            if (_State) 
+            if (_State)
                 _Owner.BackgroundImage = _OnBitmap;
-            else 
+            else
                 _Owner.BackgroundImage = _OffBitmap;
 
             _Owner.ResumeDrawing();
         }
 
-        #endregion
-        
+        #endregion private method
+
         #region constructor
 
         public StateProp(Control ctrlOwner)
@@ -89,7 +88,7 @@ namespace ncl
             _Owner.SizeChanged += DoSizeChanged;
         }
 
-        #endregion
+        #endregion constructor
 
         #region properties
 
@@ -103,9 +102,9 @@ namespace ncl
                     _State = value;
                     UpdateState();
                 }
-
             }
         }
+
         public bool UseGradient
         {
             get { return _UseGradient; }
@@ -118,6 +117,7 @@ namespace ncl
                 }
             }
         }
+
         public bool ChangeImage
         {
             get { return _ChangeImage; }
@@ -130,6 +130,7 @@ namespace ncl
                 }
             }
         }
+
         public LinearGradientMode GradientMode
         {
             get { return _GradientMode; }
@@ -142,6 +143,7 @@ namespace ncl
                 }
             }
         }
+
         public Color OnColor1
         {
             get { return _OnColor1; }
@@ -155,6 +157,7 @@ namespace ncl
                 }
             }
         }
+
         public Color OnColor2
         {
             get { return _OnColor2; }
@@ -168,6 +171,7 @@ namespace ncl
                 }
             }
         }
+
         public Color OffColor1
         {
             get { return _OffColor1; }
@@ -181,6 +185,7 @@ namespace ncl
                 }
             }
         }
+
         public Color OffColor2
         {
             get { return _OffColor2; }
@@ -194,6 +199,7 @@ namespace ncl
                 }
             }
         }
+
         public Color BorderColor
         {
             get { return _BorderColor; }
@@ -206,6 +212,7 @@ namespace ncl
                 }
             }
         }
+
         public StateColorSet ColorSet
         {
             get { return _ColorSet; }
@@ -223,10 +230,10 @@ namespace ncl
             }
         }
 
-        #endregion
+        #endregion properties
 
         #region public method
-        
+
         /// runtime 시에 property를 체크하므로 객체 생성이 완료된 후에 이 작업을 해주어야 한다
         public void Initialize()
         {
@@ -282,9 +289,9 @@ namespace ncl
             UpdateState();
         }
 
-        #endregion
+        #endregion public method
     }
-    
+
     /// http://www.codeproject.com/Articles/9667/Creating-Custom-Controls-Providing-Design-Time-Sup
     internal class StatePropTypeConverter : TypeConverter
     {
@@ -300,6 +307,5 @@ namespace ncl
         {
             return TypeDescriptor.GetProperties(typeof(StateProp));
         }
-
     }
 }

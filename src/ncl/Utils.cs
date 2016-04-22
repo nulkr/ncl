@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Threading;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Globalization;
-using System.Reflection;
-using System.ComponentModel;
-using System.IO.Compression;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 //http://stackoverflow.com/questions/1142802/how-to-use-localization-in-c-sharp
 namespace ncl
@@ -23,14 +17,17 @@ namespace ncl
         {
             MessageBox.Show(text, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         public static void Error(string text)
         {
             MessageBox.Show(text, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
+
         public static void Warning(string text)
         {
             MessageBox.Show(text, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+
         public static bool Query(string text)
         {
             return MessageBox.Show(text, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
@@ -58,7 +55,7 @@ namespace ncl
             // Convert the new byte[] into a char[] and then into a string.
             char[] asciiChars = new char[Encoding.ASCII.GetCharCount(asciiBytes, 0, asciiBytes.Length)];
             ascii.GetChars(asciiBytes, 0, asciiBytes.Length, asciiChars, 0);
-            
+
             return new string(asciiChars);
         }
 
@@ -113,15 +110,14 @@ namespace ncl
             Marshal.FreeHGlobal(ptr);
 
             return arr;
-
         }
+
         /// <summary>
         /// Byte Array to Struct
         /// http://bytes.com/topic/c-sharp/answers/236808-how-convert-structure-byte-array
         /// </summary>
         public static void BytesToStruct(byte[] bytearray, ref object obj)
         {
-
             int len = Marshal.SizeOf(obj);
 
             IntPtr i = Marshal.AllocHGlobal(len);
@@ -131,8 +127,8 @@ namespace ncl
             obj = Marshal.PtrToStructure(i, obj.GetType());
 
             Marshal.FreeHGlobal(i);
-
         }
+
         /// <summary>
         /// http://stackoverflow.com/questions/415291/best-way-to-combine-two-or-more-byte-arrays-in-c-sharp
         /// </summary>
@@ -150,7 +146,7 @@ namespace ncl
             return rv;
         }
 
-        #endregion
+        #endregion Struct & array
 
         # region Directories
 
@@ -168,7 +164,7 @@ namespace ncl
 
             return sBaseDir.Remove(nStartIndex + 2);
         }
-        
+
         /// 상대 경로로 표현된 디렉토리를 AppDir를 기반으로하는 풀 디렉토리명으로 만들어 반환
         /// <param name="sRelativeDirName"></param>
         /// <returns></returns>
@@ -187,9 +183,9 @@ namespace ncl
                     return App.Path + sRelativeDirName.Substring(1);
                 else
                     return App.Path + sRelativeDirName;
-            }  
+            }
         }
-        
+
         /// 상대 경로로 표현된 파일 이름의 풀 패쓰명을 반환
         /// <param name="sRelativeFileName"></param>
         /// <returns></returns>
@@ -220,7 +216,7 @@ namespace ncl
         }
 
         /// 같은 파일인지 체크
-        /// 
+        ///
         public static bool SameFileName(string file1, string file2)
         {
             return file1.Equals(file2, StringComparison.OrdinalIgnoreCase);
@@ -239,6 +235,7 @@ namespace ncl
         {
             return Math.PI / 180.0 * angleDeg;
         }
+
         public static double ToDegree(double angleDeg)
         {
             return 180.0 / Math.PI * angleDeg;
@@ -248,16 +245,19 @@ namespace ncl
         {
             return (value >= min && value <= max);
         }
+
         public static bool InRange(double value, double min, double max)
         {
             return (value >= min && value <= max);
         }
+
         public static int EnsureRange(int value, int min, int max)
         {
             if (value < min) return min;
             if (value > max) return max;
             return value;
         }
+
         public static double EnsureRange(double value, double min, double max)
         {
             if (value < min) return min;
@@ -269,6 +269,7 @@ namespace ncl
         {
             return (value & (1 << bitIndex)) != 0;
         }
+
         public static void SetBit32(ref UInt32 value, int bitIndex, bool state)
         {
             if (state)
@@ -276,18 +277,22 @@ namespace ncl
             else
                 value &= ((UInt32)1 << bitIndex) ^ 0xFFFFFFFF;
         }
+
         public static void ToggleBit32(ref UInt32 value, int bitIndex)
         {
             value ^= (UInt32)1 << bitIndex;
         }
+
         public static bool GetBit32(Int32 value, int bitIndex)
         {
             return GetBit32((UInt32)value, bitIndex);
         }
+
         public static void SetBit32(ref Int32 value, int bitIndex, bool state)
         {
             SetBit32(ref value, bitIndex, state);
         }
+
         public static void ToggleBit32(ref Int32 value, int bitIndex)
         {
             ToggleBit32(ref value, bitIndex);
@@ -319,6 +324,7 @@ namespace ncl
 
             aDstGraphics.DrawImage(aSrcImage, new Rectangle(aDstX, aDstY, aSrcImage.Width, aSrcImage.Height), 0, 0, aSrcImage.Width, aSrcImage.Height, GraphicsUnit.Pixel, ia);
         }
+
         public static void DrawAlpha(Image aDstImage, Image aSrcImage, int aDstX, int aDstY, float alpha)
         {
             using (Graphics g = Graphics.FromImage(aDstImage))
@@ -330,7 +336,7 @@ namespace ncl
         #endregion
 
         #region Geometry
-        
+
         /// 두점을 대각으로 가지는 Rectangle 생성
         /// <param name="x1"></param>
         /// <param name="y1"></param>
@@ -342,8 +348,9 @@ namespace ncl
             int x = Math.Min(x1, x2);
             int y = Math.Min(y1, y2);
 
-            return new Rectangle(x, y, Math.Abs(x1 - x2 + 1), Math.Abs(y1 - y2+ 1));
+            return new Rectangle(x, y, Math.Abs(x1 - x2 + 1), Math.Abs(y1 - y2 + 1));
         }
+
         public static Rectangle CreateRect_From2Point(Point p1, Point p2)
         {
             return CreateRect_From2Point(p1.X, p1.Y, p2.X, p2.Y);
@@ -353,9 +360,9 @@ namespace ncl
 
         #region file i/o
 
-        /// This method accepts two strings the represent two files to 
+        /// This method accepts two strings the represent two files to
         /// compare. A return value of 0 indicates that the contents of the files
-        /// are the same. A return value of any other value indicates that the 
+        /// are the same. A return value of any other value indicates that the
         /// files are not the same.
         /// https://support.microsoft.com/ko-kr/kb/320348
         public static bool FileCompare(string file1, string file2)
@@ -376,7 +383,7 @@ namespace ncl
             fs1 = new FileStream(file1, FileMode.Open);
             fs2 = new FileStream(file2, FileMode.Open);
 
-            // Check the file sizes. If they are not the same, the files 
+            // Check the file sizes. If they are not the same, the files
             // are not the same.
             if (fs1.Length != fs2.Length)
             {
@@ -403,13 +410,12 @@ namespace ncl
             fs1.Close();
             fs2.Close();
 
-            // Return the success of the comparison. "file1byte" is 
-            // equal to "file2byte" at this point only if the files are 
+            // Return the success of the comparison. "file1byte" is
+            // equal to "file2byte" at this point only if the files are
             // the same.
             return ((file1byte - file2byte) == 0);
         }
+
         #endregion
     }
-
-   
 }

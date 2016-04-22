@@ -41,14 +41,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AxDIO.cs" />
-    <Compile Include="Include\AXA.cs" />
-    <Compile Include="Include\AXC.cs" />
-    <Compile Include="Include\AXD.cs" />
-    <Compile Include="Include\AXDev.cs" />
-    <Compile Include="Include\AXHD.cs" />
-    <Compile Include="Include\AXHS.cs" />
-    <Compile Include="Include\AXL.cs" />
-    <Compile Include="Include\AXM.cs" />
+    <Compile Include="AXL%28Library%29\AXA.cs" />
+    <Compile Include="AXL%28Library%29\AXC.cs" />
+    <Compile Include="AXL%28Library%29\AXD.cs" />
+    <Compile Include="AXL%28Library%29\AXDev.cs" />
+    <Compile Include="AXL%28Library%29\AXHD.cs" />
+    <Compile Include="AXL%28Library%29\AXHS.cs" />
+    <Compile Include="AXL%28Library%29\AXL.cs" />
+    <Compile Include="AXL%28Library%29\AXM.cs" />
+    <Compile Include="AxMotors.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

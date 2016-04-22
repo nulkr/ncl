@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
 using System.IO;
-using System.Drawing.Imaging;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Runtime.Serialization;
 using System.Windows.Forms;
 
 namespace ncl
@@ -44,7 +39,7 @@ namespace ncl
 
             public string ImgPath = "";
 
-            AlarmItem[] _Array = new AlarmItem[ALARM_COUNT];
+            private AlarmItem[] _Array = new AlarmItem[ALARM_COUNT];
 
             public volatile int[] Buffers = new int[BUFFER_COUNT];
 
@@ -112,6 +107,7 @@ namespace ncl
                     reader.Close();
                 }
             }
+
             public void SaveToCSV(string filename, char seperator = '|')
             {
                 using (StreamWriter w = new System.IO.StreamWriter(filename))
@@ -183,6 +179,7 @@ namespace ncl
                 for (int i = 0; i < BUFFER_COUNT; i++)
                     Buffers[i] = 0;
             }
+
             public void AlarmOccur(int code)
             {
                 for (int i = 0; i < BUFFER_COUNT; i++)

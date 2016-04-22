@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace ncl
@@ -13,10 +10,12 @@ namespace ncl
 
         [DllImport("user32.dll", EntryPoint = "SendMessageA", ExactSpelling = true, CharSet = CharSet.Ansi, SetLastError = true)]
         public static extern IntPtr SendMessageA(IntPtr hwnd, int wMsg, int wParam, int lParam);
+
         public const int WM_SETREDRAW = 0xB;
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int FindWindow(string lpClassName, string lpWindowName);
+
         public const int SW_FORCEMINIMIZE = 11; // Minimizes a window, even if the thread that owns the window is not responding. This flag should only be used when minimizing windows from a different thread.</para>
         public const int SW_HIDE = 0; // Hides the window and activates another window.</para>
         public const int SW_MAXIMIZE = 3; // Maximizes the specified window.</para>

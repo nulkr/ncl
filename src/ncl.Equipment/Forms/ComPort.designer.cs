@@ -34,12 +34,12 @@
             this.listBox = new System.Windows.Forms.ListBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnSettings = new System.Windows.Forms.Button();
+            this.btnMonitoring = new ncl.StateButton();
+            this.btnConnected = new ncl.StateButton();
             this.propGrid = new System.Windows.Forms.PropertyGrid();
             this.panel2 = new System.Windows.Forms.Panel();
             this.cbInput = new System.Windows.Forms.ComboBox();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.btnMonitoring = new ncl.StateButton();
-            this.btnConnected = new ncl.StateButton();
             this.seqMonitoring = new ncl.Sequence();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -80,48 +80,6 @@
             this.btnSettings.Text = "Show Settings";
             this.btnSettings.UseVisualStyleBackColor = true;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
-            // 
-            // propGrid
-            // 
-            this.propGrid.Dock = System.Windows.Forms.DockStyle.Right;
-            this.propGrid.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.propGrid.Location = new System.Drawing.Point(135, 0);
-            this.propGrid.Name = "propGrid";
-            this.propGrid.Size = new System.Drawing.Size(286, 444);
-            this.propGrid.TabIndex = 11;
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.cbInput);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 402);
-            this.panel2.Name = "panel2";
-            this.panel2.Padding = new System.Windows.Forms.Padding(6);
-            this.panel2.Size = new System.Drawing.Size(135, 42);
-            this.panel2.TabIndex = 13;
-            // 
-            // cbInput
-            // 
-            this.cbInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.cbInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.cbInput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbInput.Font = new System.Drawing.Font("나눔고딕코딩", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.cbInput.FormattingEnabled = true;
-            this.cbInput.ItemHeight = 15;
-            this.cbInput.Location = new System.Drawing.Point(6, 6);
-            this.cbInput.Name = "cbInput";
-            this.cbInput.Size = new System.Drawing.Size(123, 23);
-            this.cbInput.TabIndex = 11;
-            this.cbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.comboBox1_KeyUp);
-            // 
-            // splitter1
-            // 
-            this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.splitter1.Location = new System.Drawing.Point(132, 0);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 402);
-            this.splitter1.TabIndex = 14;
-            this.splitter1.TabStop = false;
             // 
             // btnMonitoring
             // 
@@ -177,9 +135,52 @@
             this.btnConnected.UseVisualStyleBackColor = false;
             this.btnConnected.Click += new System.EventHandler(this.btnConnected_Click);
             // 
+            // propGrid
+            // 
+            this.propGrid.Dock = System.Windows.Forms.DockStyle.Right;
+            this.propGrid.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.propGrid.Location = new System.Drawing.Point(135, 0);
+            this.propGrid.Name = "propGrid";
+            this.propGrid.Size = new System.Drawing.Size(286, 444);
+            this.propGrid.TabIndex = 11;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.cbInput);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 402);
+            this.panel2.Name = "panel2";
+            this.panel2.Padding = new System.Windows.Forms.Padding(6);
+            this.panel2.Size = new System.Drawing.Size(135, 42);
+            this.panel2.TabIndex = 13;
+            // 
+            // cbInput
+            // 
+            this.cbInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.cbInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.cbInput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.cbInput.FormattingEnabled = true;
+            this.cbInput.ItemHeight = 18;
+            this.cbInput.Location = new System.Drawing.Point(6, 6);
+            this.cbInput.Name = "cbInput";
+            this.cbInput.Size = new System.Drawing.Size(123, 26);
+            this.cbInput.TabIndex = 11;
+            this.cbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.comboBox1_KeyUp);
+            // 
+            // splitter1
+            // 
+            this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.splitter1.Location = new System.Drawing.Point(132, 0);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(3, 402);
+            this.splitter1.TabIndex = 14;
+            this.splitter1.TabStop = false;
+            // 
             // seqMonitoring
             // 
             this.seqMonitoring.ProgressInterval = 100;
+            this.seqMonitoring.SeqNo = 0;
             this.seqMonitoring.WorkerReportsProgress = false;
             // 
             // ComPort

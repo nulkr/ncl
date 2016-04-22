@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
+using System.IO.Compression;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using System.IO.Compression;
 
 namespace ncl
 {
     public static class JsonFile
     {
-
         public static void Load<T>(ref T o, string fileName)
         {
             using (var r = File.OpenText(fileName))
@@ -20,12 +15,14 @@ namespace ncl
                 o = JsonConvert.DeserializeObject<T>(r.ReadToEnd());
             }
         }
+
         public static void LoadBson<T>(ref T o, string fileName)
         {
             using (var fs = new FileStream(fileName, FileMode.Open))
             using (BsonReader reader = new BsonReader(fs))
                 o = (new JsonSerializer()).Deserialize<T>(reader);
         }
+
         public static void LoadCompressed<T>(ref T o, string fileName)
         {
             using (var fs = new FileStream(fileName, FileMode.Open))
@@ -35,11 +32,13 @@ namespace ncl
                 o = JsonConvert.DeserializeObject<T>(reader.ReadString());
             }
         }
+
         public static void Save(object o, string fileName, Newtonsoft.Json.Formatting formatting = Formatting.None)
         {
             using (StreamWriter file = File.CreateText(fileName))
                 file.Write(JsonConvert.SerializeObject(o, formatting));
         }
+
         public static void SaveBson(object o, string fileName)
         {
             using (var fs = new FileStream(fileName, FileMode.Create))
@@ -48,6 +47,7 @@ namespace ncl
                 (new JsonSerializer()).Serialize(bw, o);
             }
         }
+
         public static void SaveCompressed(object o, string fileName)
         {
             using (var fs = new FileStream(fileName, FileMode.Create))

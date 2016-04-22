@@ -1,22 +1,14 @@
 ﻿/// Base COM port terminal
-/// 
-/// usage : 
+///
+/// usage :
 ///  1. form inheritance
 ///  2. override Send, {AddToListBox}
 ///  3. add event serialPort
 ///  4. add event seqMonitoring
 ///
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.IO.Ports;
 using System.IO;
-using System.Xml.Serialization;
+using System.Windows.Forms;
 
 namespace ncl
 {
@@ -25,13 +17,14 @@ namespace ncl
         #region field
 
         private string _ComName;
-        #endregion
+
+        #endregion field
 
         #region property
 
         public bool Connected
         {
-            get { return serialPort.IsOpen;  }
+            get { return serialPort.IsOpen; }
             set
             {
                 if (value)
@@ -44,7 +37,7 @@ namespace ncl
                     {
                         MsgBox.Error(e.Message);
                         App.Logger.Fatal(e);
-                    }                    
+                    }
                 }
                 else serialPort.Close();
 
@@ -53,21 +46,23 @@ namespace ncl
         }
 
         public string IniFileName { get; set; }
+
         public string ComName
-        { 
+        {
             get { return _ComName; }
-            set 
+            set
             {
                 _ComName = value;
                 Text = "ComPort - " + _ComName;
             }
         }
+
         #endregion property
 
         #region constructor
 
         // 기본 생성자가 없으면 상속시 디자이너의 오류가 발생한다
-        public ComPort() 
+        public ComPort()
         {
             InitializeComponent();
 
@@ -79,6 +74,7 @@ namespace ncl
             if (File.Exists(IniFileName))
                 LoadSettings();
         }
+
         public ComPort(string comName, string iniFilename = "ComPort.ini")
         {
             InitializeComponent();
@@ -92,7 +88,7 @@ namespace ncl
                 LoadSettings();
         }
 
-        #endregion
+        #endregion constructor
 
         #region method
 
@@ -107,6 +103,7 @@ namespace ncl
 
             Connected = oldconn;
         }
+
         public void SaveSettings()
         {
             IniFile ini = new IniFile(IniFileName);
@@ -124,7 +121,7 @@ namespace ncl
             catch (Exception e)
             {
                 App.Logger.Fatal(e.ToString()); // TODO : exception handling
-            } 
+            }
         }
 
         public virtual void AddToListBox(string s)
@@ -138,7 +135,7 @@ namespace ncl
                 });
         }
 
-        #endregion
+        #endregion method
 
         #region event
 
@@ -194,9 +191,7 @@ namespace ncl
             e.Cancel = true;
             Hide();
         }
-        
-        #endregion
 
-
+        #endregion event
     }
 }

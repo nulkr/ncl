@@ -7,8 +7,9 @@ namespace ncl
     {
         #region field
 
-        string _ValueFormat;
-        #endregion
+        private string _ValueFormat;
+
+        #endregion field
 
         #region property
 
@@ -27,7 +28,7 @@ namespace ncl
 
         public double Value
         {
-            get 
+            get
             {
                 try
                 {
@@ -46,7 +47,8 @@ namespace ncl
         {
             get { return (int)Math.Round(Value); }
         }
-        #endregion
+
+        #endregion property
 
         #region constructor
 
@@ -56,7 +58,8 @@ namespace ncl
 
             Text = "0";
         }
-        #endregion
+
+        #endregion constructor
 
         #region method
 
@@ -64,6 +67,7 @@ namespace ncl
         {
             Text = String.Format(_ValueFormat, value);
         }
-        #endregion
+
+        #endregion method
     }
 }

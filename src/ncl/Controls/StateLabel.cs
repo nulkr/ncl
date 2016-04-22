@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Drawing;
 using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace ncl
 {
@@ -12,11 +12,12 @@ namespace ncl
         private StateProp _StateProp;
         private string _ValueFormat;
         private int _ValueSubIndex0, _ValueSubIndex1;
-        #endregion
+
+        #endregion field
 
         #region constructor
 
-        public StateLabel() 
+        public StateLabel()
         {
             _StateProp = new StateProp(this);
 
@@ -29,7 +30,8 @@ namespace ncl
             TextAlign = ContentAlignment.MiddleCenter;
             AutoSize = false;
         }
-        #endregion
+
+        #endregion constructor
 
         #region property
 
@@ -38,11 +40,13 @@ namespace ncl
             get { return _StateProp.State; }
             set { _StateProp.State = value; }
         }
+
         public StateColorSet ColorSet
         {
-            get { return _StateProp.ColorSet;  }
+            get { return _StateProp.ColorSet; }
             set { StateProp.ColorSet = value; }
         }
+
         public string ValueFormat
         {
             get { return _ValueFormat; }
@@ -98,7 +102,8 @@ namespace ncl
             get { return _StateProp; }
             set { _StateProp = value; }
         }
-        #endregion
+
+        #endregion property
 
         #region override Label
 
@@ -108,7 +113,8 @@ namespace ncl
 
             _StateProp.Initialize();
         }
-        #endregion
+
+        #endregion override Label
 
         #region method
 
@@ -123,6 +129,7 @@ namespace ncl
 
             base.OnPaddingChanged(e);
         }
-        #endregion
+
+        #endregion method
     }
 }

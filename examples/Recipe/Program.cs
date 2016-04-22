@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ncl.Equipment;
 using ncl;
+using ncl.Equipment;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Bson;
-using System.IO.Compression;
-
 
 namespace ExRecipe
 {
@@ -48,7 +40,7 @@ namespace ExRecipe
             //JsonFile.Save(recipe, "cjson.json");
             //Console.WriteLine(Utils.FileCompare("1.json", "cjson.json"));
             //Console.WriteLine();
-            #endregion
+            #endregion Test JsonFile
 
             #region Test Recipe
 
@@ -75,7 +67,7 @@ namespace ExRecipe
             Console.Write(recipe["t_MaxStage"].Value);
             Console.WriteLine();
             Console.WriteLine();
-            #endregion
+            #endregion Test Recipe
 
             #region Test alarms
 
@@ -90,7 +82,7 @@ namespace ExRecipe
             Console.Write(alarms[33].Text);
             Console.WriteLine();
             Console.WriteLine();
-            #endregion
+            #endregion Test alarms
 
             #region Test DIOs
 
@@ -98,7 +90,7 @@ namespace ExRecipe
             Console.Write("Testing DIOList......");
             DIOList io = new DIOList(4, 16);
 
-            //if (!File.Exists("io.csv"))
+            if (!File.Exists("io.csv"))
                 io.SaveCsvSchema("io.csv");
 
             io.LoadCsvSchema("io.csv");
@@ -119,15 +111,17 @@ namespace ExRecipe
                     io.DataArray[mod, sub] = (uint)r.Next(UInt16.MaxValue);
 
                     bool b1 = Utils.GetBit32(io.DataArray[mod, sub], bit);
-                    
+
                     io.DataArrayToBits(true);
                     bool b2 = io.Bits[index];
 
-                    if (b1 != b2)
+                    if (io.SchemaArray[mod, sub] != DIOSubType.None)
                     {
-                        Console.WriteLine("DataArrayToBits " + b1.ToString() + " != " + b2.ToString());
+                        if (b1 != b2)
+                        {
+                            Console.WriteLine("DataArrayToBits " + b1.ToString() + " != " + b2.ToString());
+                        }
                     }
-
                     if (io.SchemaArray[mod, sub] == DIOSubType.Output)
                     {
                         io.Bits[index] = Convert.ToBoolean(r.Next(2));
@@ -145,7 +139,7 @@ namespace ExRecipe
                 Console.WriteLine("Finished");
             }
             Console.WriteLine();
-            #endregion
+            #endregion Test DIOs
 
             #region Test Motors
 
@@ -153,11 +147,11 @@ namespace ExRecipe
             Console.Write("Check MotorList......");
             MotorList motors = new MotorList(32);
             motors[1].Name = "01 Loader";
-            motors.SaveToCsv("motors.csv");
-            motors.LoadFromCsv("motors.csv");
+            motors.SaveCsvSchema("motors.csv");
+            motors.LoadCsvSchema("motors.csv");
             //            Console.WriteLine(Utils.FileCompare("io.csv", "io-1.csv"));
 
-            #endregion
+            #endregion Test Motors
         }
     }
 }

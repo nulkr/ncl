@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Drawing;
 using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace ncl
 {
@@ -10,7 +9,8 @@ namespace ncl
         #region field
 
         private StateProp _StateProp;
-        #endregion
+
+        #endregion field
 
         #region property
 
@@ -19,6 +19,7 @@ namespace ncl
             get { return _StateProp.State; }
             set { _StateProp.State = value; }
         }
+
         public StateColorSet ColorSet
         {
             get { return _StateProp.ColorSet; }
@@ -31,18 +32,20 @@ namespace ncl
             get { return _StateProp; }
             set { _StateProp = value; }
         }
-        #endregion
+
+        #endregion property
 
         #region constructor
 
-        public StateButton() 
+        public StateButton()
         {
             Padding = new Padding(10);
 
             _StateProp = new StateProp(this);
         }
-        #endregion
-        
+
+        #endregion constructor
+
         #region override Button
 
         protected override void OnClick(EventArgs e)
@@ -66,6 +69,6 @@ namespace ncl
             base.OnPaddingChanged(e);
         }
 
-        #endregion
+        #endregion override Button
     }
 }

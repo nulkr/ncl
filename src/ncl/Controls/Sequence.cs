@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Text;
 using System.Threading;
 
 namespace ncl
@@ -11,17 +10,19 @@ namespace ncl
     {
         #region constant
 
-        const int c_None = 0;
-        const int c_Completed = -4000;
-        const int c_ExceptErrorCode = 65535;
-        #endregion
+        private const int c_None = 0;
+        private const int c_Completed = -4000;
+        private const int c_ExceptErrorCode = 65535;
+
+        #endregion constant
 
         #region field
 
         private BackgroundWorker _Worker = null;
         private int _ErrorCode = 0;
         private int _SeqNo = 0;
-        #endregion
+
+        #endregion field
 
         #region property
 
@@ -74,7 +75,7 @@ namespace ncl
 
         public int ProgressInterval { get; set; }
 
-        #endregion
+        #endregion property
 
         #region constructor
 
@@ -89,10 +90,11 @@ namespace ncl
 
             ProgressInterval = 100;
         }
-        #endregion
+
+        #endregion constructor
 
         #region method
-        
+
         public void Start(int nStartNo = 1)
         {
             if (!_Worker.IsBusy)
@@ -109,11 +111,13 @@ namespace ncl
                 _Worker.RunWorkerAsync();
             }
         }
+
         public void Abort()
         {
             _Worker.CancelAsync();
             SeqNo = -Math.Abs(_SeqNo);
         }
+
         public void Next()
         {
             if (_SeqNo == 1)
@@ -121,40 +125,48 @@ namespace ncl
             else if (_SeqNo > 0)
                 SeqNo += 10;
         }
+
         public void Jump(int No)
         {
             SeqNo = No;
         }
+
         public void Finish()
         {
             SeqNo = c_Completed;
         }
+
         public void Error(int nErrCode)
         {
             _Worker.CancelAsync();
             SeqNo = -Math.Abs(_SeqNo);
             _ErrorCode = nErrCode;
         }
+
         public void Pause()
         {
             if (_Worker.IsBusy)
                 _Worker.CancelAsync();
         }
+
         public void Resume()
         {
             if (!_Worker.IsBusy)
                 _Worker.RunWorkerAsync();
         }
 
-        #endregion
+        #endregion method
 
         #region event
 
         public delegate void CanStartEventHandler(object sender, CancelEventArgs e);
 
         public event CanStartEventHandler OnCanStart;
+
         public event DoWorkEventHandler OnWork;
+
         public event ProgressChangedEventHandler OnProgress;
+
         public event RunWorkerCompletedEventHandler OnCompleted;
 
         private void DoWork(object sender, DoWorkEventArgs args)
@@ -173,7 +185,7 @@ namespace ncl
                         tick = Environment.TickCount + ProgressInterval;
                     }
 
-                    if (_Worker.CancellationPending) // request suspend 
+                    if (_Worker.CancellationPending) // request suspend
                     {
                         break;
                     }
@@ -198,6 +210,7 @@ namespace ncl
         {
             if (OnCompleted != null) OnCompleted(this, e);
         }
-        #endregion
+
+        #endregion event
     }
 }

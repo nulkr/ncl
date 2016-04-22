@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace ncl
 {
     public class StringEventArgs : EventArgs
     {
-        public string Str {get; set; }
+        public string Str { get; set; }
 
         public StringEventArgs(string s)
         {
@@ -47,6 +44,7 @@ namespace ncl
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
     {
         #region IXmlSerializable Members
+
         public System.Xml.Schema.XmlSchema GetSchema()
         {
             return null;
@@ -104,6 +102,7 @@ namespace ncl
                 writer.WriteEndElement();
             }
         }
-        #endregion
+
+        #endregion IXmlSerializable Members
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Drawing;
+using System.Drawing.Design;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
-using System.Drawing;
-using System.ComponentModel.Design;
-using System.Drawing.Design;
 
 namespace ncl
 {
@@ -18,7 +18,8 @@ namespace ncl
         private int _Column = 1;
         private string[] _Items = new string[0];
         private Rectangle[] _Rects;
-        #endregion
+
+        #endregion field
 
         #region constructor
 
@@ -26,7 +27,8 @@ namespace ncl
         {
             DoubleBuffered = true;
         }
-        #endregion
+
+        #endregion constructor
 
         #region property
 
@@ -100,7 +102,7 @@ namespace ncl
             }
         }
 
-        #endregion
+        #endregion property
 
         #region method
 
@@ -133,7 +135,8 @@ namespace ncl
                 }
             }
         }
-        #endregion
+
+        #endregion method
 
         #region override GroupBox
 
@@ -244,9 +247,7 @@ namespace ncl
                 RadioButtonRenderer.DrawRadioButton(e.Graphics, p, r, _Items[i], this.Font, flags, this.Focused, state);
             }
         }
-        #endregion
+
+        #endregion override GroupBox
     }
 }
-
-
- 

@@ -12,15 +12,15 @@ namespace ncl
         [Flags]
         public enum RecipeKindFlag
         {
-            None    = 0x0000,
-            Fixed   = 0x0001,	// symbol = !
-            CIM     = 0x0002,	// symbol = @
-            PMAC    = 0x0010,   // symbol = D
-            PLC     = 0x0020,   // sympol = P
-            AJIN    = 0x0040,   // sympol = A
-            Bool    = 0x1000,   // symbol = B
-            Int     = 0x2000,   // symbol = #
-            String  = 0x4000,   // symbol = S
+            None = 0x0000,
+            Fixed = 0x0001,	// symbol = !
+            CIM = 0x0002,	// symbol = @
+            PMAC = 0x0010,   // symbol = D
+            PLC = 0x0020,   // sympol = P
+            AJIN = 0x0040,   // sympol = A
+            Bool = 0x1000,   // symbol = B
+            Int = 0x2000,   // symbol = #
+            String = 0x4000,   // symbol = S
         };
 
         // Key, Value, Text만 저정한다
@@ -31,7 +31,7 @@ namespace ncl
             public RecipeKindFlag Kind;
             public string Category = "";
             public string Comment = "";
-            
+
             public string Symbols
             {
                 get
@@ -81,9 +81,20 @@ namespace ncl
                 }
             }
 
-            public bool IsString() { return (Kind & RecipeKindFlag.String) > 0; }
-            public bool IsBool() { return (Kind & (RecipeKindFlag.Bool)) > 0; }
-            public bool IsInt() { return (Kind & RecipeKindFlag.Int) > 0; }
+            public bool IsString()
+            {
+                return (Kind & RecipeKindFlag.String) > 0;
+            }
+
+            public bool IsBool()
+            {
+                return (Kind & (RecipeKindFlag.Bool)) > 0;
+            }
+
+            public bool IsInt()
+            {
+                return (Kind & RecipeKindFlag.Int) > 0;
+            }
         }
 
         public class Recipe
@@ -99,11 +110,11 @@ namespace ncl
 
             public RecipeItem this[string key]
             {
-                get 
-                { 
+                get
+                {
                     try
                     {
-                        return Items[key]; 
+                        return Items[key];
                     }
                     catch (Exception ex)
                     {
@@ -135,6 +146,7 @@ namespace ncl
             }
 
             public event ReadBinaryEventHandler OnReadBinary;
+
             public event WriteBinaryEventHandler OnWriteBinary;
 
             // 모든 데이터 목록 삭제
@@ -146,81 +158,84 @@ namespace ncl
             // PMAC Define 파일을 Parsing 하여 데이터 목록을 얻고 Items에 추가 한다.
             public void AddPmacSchema(string filename, RecipeKindFlag kind = RecipeKindFlag.None)
             {
-                
                 string s;
                 using (var fr = new StreamReader(filename, Encoding.GetEncoding("ks_c_5601-1987"), true))
-                while ((s = fr.ReadLine()) != null)
-                {
-                    s = s.Trim();
-                    if (s.Length < 1) continue;
-
-                    // ignore comment
-                    if (s.IndexOf("//") == 0) continue;
-                    if (s.IndexOf(';') == 0) continue;
-
-                    s = s.Replace("//", ",");
-                    s = s.Replace("\t", "  ");
-
-                    string[] words = s.Split(',');
-                    if (words.Length < 1)
-                        continue;
-
-                    RecipeItem item = new RecipeItem();
-                    string key = "";
-
-                    for (int i = 0; i < words.Length; i++)
+                    while ((s = fr.ReadLine()) != null)
                     {
-                        switch (i)
-                        {
-                            case 0:
-                                words[i] = Regex.Replace(words[i], "#define", "", RegexOptions.IgnoreCase).Trim();
+                        s = s.Trim();
+                        if (s.Length < 1) continue;
 
-                                if (words[i].IndexOf('"') > -1)
-                                {
-                                    string[] sNameAndText = words[i].Split('"');
-                                    key = sNameAndText[0].Trim();
-                                    item.Text = sNameAndText[1];
-                                    item.Kind |= RecipeKindFlag.String;
-                                }
-                                else
-                                {
-                                    string[] sNameAndText = words[i].Split(' ');
-                                    if (sNameAndText.Length > 1)
+                        // ignore comment
+                        if (s.IndexOf("//") == 0) continue;
+                        if (s.IndexOf(';') == 0) continue;
+
+                        s = s.Replace("//", ",");
+                        s = s.Replace("\t", "  ");
+
+                        string[] words = s.Split(',');
+                        if (words.Length < 1)
+                            continue;
+
+                        RecipeItem item = new RecipeItem();
+                        string key = "";
+
+                        for (int i = 0; i < words.Length; i++)
+                        {
+                            switch (i)
+                            {
+                                case 0:
+                                    words[i] = Regex.Replace(words[i], "#define", "", RegexOptions.IgnoreCase).Trim();
+
+                                    if (words[i].IndexOf('"') > -1)
                                     {
-                                        key = sNameAndText[0];
-                                        if (!double.TryParse(sNameAndText[sNameAndText.Length - 1], out item.Value))
+                                        string[] sNameAndText = words[i].Split('"');
+                                        key = sNameAndText[0].Trim();
+                                        item.Text = sNameAndText[1];
+                                        item.Kind |= RecipeKindFlag.String;
+                                    }
+                                    else
+                                    {
+                                        string[] sNameAndText = words[i].Split(' ');
+                                        if (sNameAndText.Length > 1)
                                         {
-                                            item.Text = sNameAndText[1];
-                                            item.Kind |= RecipeKindFlag.String;
+                                            key = sNameAndText[0];
+                                            if (!double.TryParse(sNameAndText[sNameAndText.Length - 1], out item.Value))
+                                            {
+                                                item.Text = sNameAndText[1];
+                                                item.Kind |= RecipeKindFlag.String;
+                                            }
                                         }
                                     }
-                                }
-                                break;
-                            case 1:
-                                item.Category = words[i].Trim();
-                                break;
-                            case 2:
-                                double.TryParse(words[i], out item.Value); 
-                                break;
-                            case 3:
-                                item.Comment = words[i].Trim();
-                                break;
-                            case 4:
-                                item.Symbols = words[i].Trim();
-                                break;
+                                    break;
+
+                                case 1:
+                                    item.Category = words[i].Trim();
+                                    break;
+
+                                case 2:
+                                    double.TryParse(words[i], out item.Value);
+                                    break;
+
+                                case 3:
+                                    item.Comment = words[i].Trim();
+                                    break;
+
+                                case 4:
+                                    item.Symbols = words[i].Trim();
+                                    break;
+                            }
+                        }
+
+                        if (key != "" && !Items.ContainsKey(key))
+                        {
+                            if (item.Kind.HasFlag(RecipeKindFlag.String) || item.Text.Length < 1 || item.Text.ToUpper().IndexOfAny(PMAC_PREFIX) != 0)
+                                item.Kind |= kind;
+                            else
+                                item.Kind |= RecipeKindFlag.PMAC | kind;
+
+                            Items.Add(key, item);
                         }
                     }
-
-                    if (key != "" && !Items.ContainsKey(key))
-                    {
-                        if (item.Kind.HasFlag(RecipeKindFlag.String) || item.Text.Length < 1 || item.Text.ToUpper().IndexOfAny(PMAC_PREFIX) != 0)
-                            item.Kind |= kind;
-                        else
-                            item.Kind |= RecipeKindFlag.PMAC | kind;
-
-                        Items.Add(key, item);
-                    }
-                }
             }
 
             // CSV 파일을 Parsing 하여 데이터 목록을 얻고 Items에 추가 한다.
@@ -228,37 +243,37 @@ namespace ncl
             {
                 string s;
                 using (var fr = new StreamReader(filename))
-                while ((s = fr.ReadLine()) != null)
-                {
-                    s = s.Trim();
-                    if (s.Length < 1) continue; // ignore empty
-                    if (s.IndexOf("//") == 0) continue; // ignore comment
-                    if (s.IndexOf(';') == 0) continue; // ignore comment
-
-                    string[] words = s.Split(seperator);
-                    if (words.Length < 1)  // ignore empty
-                        continue;
-
-                    string key = words[0].Trim();
-                    if (key == "" || Items.ContainsKey(key)) // ignore empty || aleady exists
-                        continue;
-
-                    RecipeItem item = new RecipeItem();
-
-                    // Key, Value, Text, Category, Comment, Symbols 의 순서
-                    for (int i = 1; i < words.Length; i++)
+                    while ((s = fr.ReadLine()) != null)
                     {
-                        switch (i)
+                        s = s.Trim();
+                        if (s.Length < 1) continue; // ignore empty
+                        if (s.IndexOf("//") == 0) continue; // ignore comment
+                        if (s.IndexOf(';') == 0) continue; // ignore comment
+
+                        string[] words = s.Split(seperator);
+                        if (words.Length < 1)  // ignore empty
+                            continue;
+
+                        string key = words[0].Trim();
+                        if (key == "" || Items.ContainsKey(key)) // ignore empty || aleady exists
+                            continue;
+
+                        RecipeItem item = new RecipeItem();
+
+                        // Key, Value, Text, Category, Comment, Symbols 의 순서
+                        for (int i = 1; i < words.Length; i++)
                         {
-                            case 1: double.TryParse(words[i], out item.Value); break;
-                            case 2: item.Text = words[i].Trim(); break;
-                            case 3: item.Category = words[i].Trim(); break;
-                            case 4: item.Comment = words[i].Trim(); break;
-                            case 5: item.Symbols = words[i].Trim(); break;
+                            switch (i)
+                            {
+                                case 1: double.TryParse(words[i], out item.Value); break;
+                                case 2: item.Text = words[i].Trim(); break;
+                                case 3: item.Category = words[i].Trim(); break;
+                                case 4: item.Comment = words[i].Trim(); break;
+                                case 5: item.Symbols = words[i].Trim(); break;
+                            }
                         }
+                        Items.Add(key, item);
                     }
-                    Items.Add(key, item);
-                }
             }
 
             // 데이터 목록을 CSV 파일에 쓴다
@@ -266,7 +281,7 @@ namespace ncl
             {
                 using (var w = new StreamWriter(filename, false))
                 {
-                    w.WriteLine("// " +DataInfo.ToString());
+                    w.WriteLine("// " + DataInfo.ToString());
                     w.WriteLine("// " + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"));
                     string fmt = "{0,-30}" + seperator + " {1,-10}" + seperator + " {2,-10}" + seperator + " {3,-20}" + seperator + " {4}" + seperator + " {5}";
                     w.WriteLine(fmt, "// Key", "Value", "Text", "Category", "Comment", "Symbols (!:Fixed *:Param @:CIM D:PMAC P:PLC A: AJIN B:Boolean #:Integer S:String)");
@@ -297,7 +312,7 @@ namespace ncl
                         if (Items.ContainsKey(key)) // Schema 에 존재
                         {
                             RecipeItem ri = Items[key];
-                            
+
                             if (isFixedFile && !ri.Kind.HasFlag(RecipeKindFlag.Fixed)) // Fixed 체크
                                 continue;
 
@@ -309,13 +324,13 @@ namespace ncl
 
                     if (isFixedFile) // Fixed Data 를 읽어오는 시점에 백업한다
                         Backup(stream);
-                    else 
+                    else
                     {
                         // additional fixed data 는 별도의 파일로 읽어하자
                         // FixedRcpFile 가 아닌 경우만 추가 데이터를 읽는다
                         ReadAddtionalBianry(r, verNo);
 
-                        if (OnReadBinary != null) 
+                        if (OnReadBinary != null)
                             OnReadBinary(this, new ReadBinaryEventArgs(r, verNo)); // Fixed Data 읽기
                     }
                 }
@@ -356,13 +371,13 @@ namespace ncl
 
                     if (isFixedFile) // Fixed Data 를 저장하는 시점에 백업한다
                         Backup(stream);
-                    else 
+                    else
                     {
                         // additional fixed data 는 별도의 파일로 저장하자
                         // FixedRcpFile 가 아닌 경우만 추가 데이터를 파일에 쓴다
                         WriteAddtionalBianry(w);
 
-                        if (OnWriteBinary != null) 
+                        if (OnWriteBinary != null)
                             OnWriteBinary(this, new WriteBinaryEventArgs(w));
                     }
                 }
@@ -407,8 +422,8 @@ namespace ncl
                 using (var ms = new MemoryStream()) // SaveToStream 호출시마다 자동 백업됨
                     SaveToStream(ms, false);
             }
-            
-            /// kind 속성을 갖는 Recipe Item을 그리드에 출력 
+
+            /// kind 속성을 갖는 Recipe Item을 그리드에 출력
             /// <param name="dstGrid"></param>
             /// <param name="kind">Grid에 출력할 RecipeKindFlag</param>
             public void AssignToGrid(DataGridView dstGrid, RecipeKindFlag kind)
@@ -542,13 +557,13 @@ namespace ncl
                 if (!Items.ContainsKey(key))
                     return false;
 
-                if ((Items[key].Kind & kind) != kind) 
+                if ((Items[key].Kind & kind) != kind)
                     return false;
 
                 item = Items[key];
                 return true;
             }
-            
+
             /// Recipe -> Child Control
             /// <param name="ctrlParent"></param>
             /// <param name="kind"></param>
@@ -633,7 +648,10 @@ namespace ncl
     {
         public BinaryWriter Writer { get; set; }
 
-        public WriteBinaryEventArgs(BinaryWriter writer) { this.Writer = writer; }
+        public WriteBinaryEventArgs(BinaryWriter writer)
+        {
+            this.Writer = writer;
+        }
     }
 
     public delegate void WriteBinaryEventHandler(object sender, WriteBinaryEventArgs e);

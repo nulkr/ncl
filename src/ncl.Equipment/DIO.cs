@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.ComponentModel;
-using System.Threading;
 
 namespace ncl
 {
@@ -55,14 +51,17 @@ namespace ncl
             /// DIOItem이 저장된 Dictionary
             /// </summary>
             public Dictionary<string, DIOItem> Items = new Dictionary<string, DIOItem>();
+
             /// <summary>
             /// Module 안의 각각의 Sub 들의 속성 (Input / Output / None)
             /// </summary>
             public DIOSubType[,] SchemaArray = null; // [Mod, Sub]
+
             /// <summary>
             /// IO 카드의 16,32 비트 unsigned int 값을 저장하는 Array
             /// </summary>
-            public volatile uint[,] DataArray = null; // [Mod, Sub]            
+            public volatile uint[,] DataArray = null; // [Mod, Sub]
+
             /// <summary>
             /// 빠른 억세스를 위한 Input Boolean Array
             /// </summary>
@@ -72,10 +71,12 @@ namespace ncl
             /// IO Module 갯수
             /// </summary>
             public int ModCount { get { return _ModCount; } }
+
             /// <summary>
             /// IO Module의 Sub 갯수
             /// </summary>
             public int SubCount { get { return _SubCount; } } // in Mod
+
             /// <summary>
             /// IO Sub의 비트 갯수 (16, 32)
             /// </summary>
@@ -104,7 +105,8 @@ namespace ncl
                         }
                     }
             }
-            #endregion
+
+            #endregion constructor
 
             /// <summary>
             /// 정수 배열인 DataArray의 값을 Boolean 배열인 BitsX, BitsY에 매핑한다
@@ -133,6 +135,7 @@ namespace ncl
                             index += _BitCount;
                     }
             }
+
             /// <summary>
             /// Boolean 배열인 BitsX, BitsY의 값을 정수 배열인 DataArray에 매핑한다
             /// Output만 골라서 매핑
@@ -159,47 +162,41 @@ namespace ncl
                             index += _BitCount;
                     }
             }
+
             /// <summary>
-            /// IO 이름으로 Input 값를 취득 
+            /// IO 이름으로 DataArray의 Input 값를 취득
             /// </summary>
             /// <param name="ioName"></param>
             /// <returns></returns>
-            public bool GetBitX(string ioName)
+            public bool GetBit(string ioName)
             {
                 var v = Items[ioName];
                 return Utils.GetBit32(DataArray[v.ModIndex, v.SubIndex], v.BitIndex);
             }
+
             /// <summary>
-            /// IO 이름으로 Output 값를 취득 
-            /// </summary>
-            /// <param name="ioName"></param>
-            /// <returns></returns>
-            public bool GetBitY(string ioName)
-            {
-                var v = Items[ioName];
-                return Utils.GetBit32(DataArray[v.ModIndex, v.SubIndex], v.BitIndex);
-            }
-            /// <summary>
-            /// 해당 Output IO를 On 혹은 Off
+            /// DataArray의 해당 Output IO를 On 혹은 Off
             /// </summary>
             /// <param name="ioName"></param>
             /// <param name="state"></param>
-            public void SetBitY(string ioName, bool state)
+            public void SetBit(string ioName, bool state)
             {
                 var v = Items[ioName];
                 Utils.SetBit32(ref DataArray[v.ModIndex, v.SubIndex], v.BitIndex, state);
                 NeedWriting = true;
             }
+
             /// <summary>
-            /// 해당 Output IO를 Toggle
+            /// DataArray 해당 Output IO를 Toggle
             /// </summary>
             /// <param name="ioName"></param>
-            public void ToggleBitY(string ioName)
+            public void ToggleBit(string ioName)
             {
                 var v = Items[ioName];
                 Utils.ToggleBit32(ref DataArray[v.ModIndex, v.SubIndex], v.BitIndex);
                 NeedWriting = true;
             }
+
             /// <summary>
             /// PMAC Define 파일로부터 I/O 정보를 취득하여 추가함
             /// </summary>
@@ -260,9 +257,9 @@ namespace ncl
                         if ((no % 100) >= 50)
                             item.ModIndex = 1;
                         else
-                            item.ModIndex = 0;                        
+                            item.ModIndex = 0;
 
-                        if (item.SubIndex > 16) 
+                        if (item.SubIndex > 16)
                         {
                             // TODO : M1600 이상일시 처리
                         }
@@ -279,6 +276,7 @@ namespace ncl
                     fr.Close();
                 }
             }
+
             /// <summary>
             /// CSV 형식의 파일로부터 I/O 정보를 취득하여 초기화함
             /// </summary>
@@ -312,10 +310,10 @@ namespace ncl
                     w.WriteLine("");
 
                     w.WriteLine("# Mod | Sub | Bit | Name | Category | Text | Comment");
-                    w.WriteLine("");                    
+                    w.WriteLine("");
 
                     foreach (var kvp in Items)
-                        w.WriteLine(string.Format(fmt, 
+                        w.WriteLine(string.Format(fmt,
                             kvp.Value.ModIndex,
                             kvp.Value.SubIndex,
                             kvp.Value.BitIndex,
@@ -325,6 +323,7 @@ namespace ncl
                             kvp.Value.Comment));
                 }
             }
+
             /// <summary>
             /// I/O 정보를 CSV 형식의 파일로 저장함
             /// </summary>
@@ -376,7 +375,7 @@ namespace ncl
                                     {
                                         case DIOSubType.Input: SchemaArray[modIndex, sub] = DIOSubType.Input; break;
                                         case DIOSubType.Output: SchemaArray[modIndex, sub] = DIOSubType.Output; break;
-                                        default: SchemaArray[modIndex, sub] = DIOSubType.None; break;   
+                                        default: SchemaArray[modIndex, sub] = DIOSubType.None; break;
                                     }
                                 continue;
                             }

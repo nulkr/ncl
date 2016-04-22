@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.ComponentModel;
-using ncl;
 
 namespace ncl
 {
@@ -15,8 +12,9 @@ namespace ncl
         {
             #region field
 
-            RecipeProperty _Property;
-            #endregion
+            private RecipeProperty _Property;
+
+            #endregion field
 
             #region constructor
 
@@ -25,7 +23,8 @@ namespace ncl
             {
                 _Property = property;
             }
-            #endregion
+
+            #endregion constructor
 
             #region override PropertyDescriptor
 
@@ -114,7 +113,7 @@ namespace ncl
                 }
             }
 
-            #endregion
+            #endregion override PropertyDescriptor
         }
 
         /// RecipeItem Property := (Name + Value)
@@ -124,7 +123,8 @@ namespace ncl
 
             private string _Name = string.Empty;
             private RecipeItem _Value = null;
-            #endregion
+
+            #endregion field
 
             #region property
 
@@ -138,7 +138,8 @@ namespace ncl
                 get { return _Value; }
                 set { _Value = value; }
             }
-            #endregion
+
+            #endregion property
 
             #region constructor
 
@@ -147,7 +148,8 @@ namespace ncl
                 _Name = sName;
                 _Value = oValue;
             }
-            #endregion
+
+            #endregion constructor
         }
 
         /// Recipe TypeDescriptor
@@ -156,7 +158,8 @@ namespace ncl
             #region field
 
             private List<RecipeProperty> _List = new List<RecipeProperty>();
-            #endregion
+
+            #endregion field
 
             #region property
 
@@ -165,7 +168,8 @@ namespace ncl
                 get { return _List[index]; }
                 set { _List[index] = (RecipeProperty)value; }
             }
-            #endregion
+
+            #endregion property
 
             #region method
 
@@ -178,7 +182,8 @@ namespace ncl
             {
                 _List.Add(new RecipeProperty(sName, item));
             }
-            #endregion
+
+            #endregion method
 
             #region ICustomTypeDescriptor Implementation
 
@@ -264,8 +269,7 @@ namespace ncl
                 return this;
             }
 
-            #endregion
+            #endregion ICustomTypeDescriptor Implementation
         }
-
     }
 }

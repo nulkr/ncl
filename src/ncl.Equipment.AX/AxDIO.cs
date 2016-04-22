@@ -6,6 +6,8 @@ using System.IO;
 
 namespace ncl.Equipment.Ax
 {
+
+    
     public class AxDIO : DIOList
     {
         private const int SUCCESS = 0;
@@ -44,7 +46,7 @@ namespace ncl.Equipment.Ax
             return true;
         }
 
-        public bool CheckModule()
+        public bool CheckModules()
         {
             int modCount = 0;
             if (CAXD.AxdInfoGetModuleCount(ref modCount) != SUCCESS)

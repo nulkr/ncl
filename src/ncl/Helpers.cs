@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.Drawing;
-using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace ncl
 {
@@ -14,6 +12,7 @@ namespace ncl
         {
             WinApi.SendMessage(ctrl.Handle, WinApi.WM_SETREDRAW, 0, 0);
         }
+
         public static void ResumeDrawing(this Control ctrl, bool redraw = true)
         {
             WinApi.SendMessage(ctrl.Handle, WinApi.WM_SETREDRAW, 1, 0);
@@ -29,6 +28,7 @@ namespace ncl
             else
                 action();
         }
+
         public static void InvokeIfNeeded<T>(this Control ctrl, Action<T> action, T args)
         {
             if (ctrl.InvokeRequired)
@@ -38,35 +38,36 @@ namespace ncl
         }
 
         /// Hide / Close child forms
-        /// 
+        ///
         public static void HideChildForms(this Control ctrl)
         {
             if (ctrl != null)
-            foreach (Control f in ctrl.Controls)
-            {
-                if (f is Form)
+                foreach (Control f in ctrl.Controls)
                 {
-                    (f as Form).Hide();
+                    if (f is Form)
+                    {
+                        (f as Form).Hide();
+                    }
                 }
-            }
         }
+
         public static void CloseChildForms(this Control ctrl)
         {
             if (ctrl != null)
-            foreach (Control f in ctrl.Controls)
-            {
-                if (f is Form)
+                foreach (Control f in ctrl.Controls)
                 {
-                    (f as Form).Close();
+                    if (f is Form)
+                    {
+                        (f as Form).Close();
+                    }
                 }
-            }
         }
     }
 
     public static class FormHelper
     {
         /// Enable/Disable child controls
-        /// 
+        ///
         public static void DisableControls(this Form form)
         {
             form.SuspendDrawing();
@@ -78,6 +79,7 @@ namespace ncl
 
             form.ResumeDrawing();
         }
+
         public static void EanbleControls(this Form form, int authority)
         {
             form.SuspendDrawing();
