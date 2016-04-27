@@ -21,16 +21,15 @@ namespace ncl
 
             public string Category = "";
             public string Text = "";
-            public string Comment = "";
+            public bool IsB = false;
 
-            public DIOItem(int mod = 0, int sub = 0, int bit = 0, string cate = "Spare", string txt = "", string cmt = "")
+            public DIOItem(int mod = 0, int sub = 0, int bit = 0, string cate = "Spare", string txt = "", bool isB = false)
             {
                 ModIndex = 0;
                 SubIndex = 0;
                 BitIndex = 0;
                 Category = cate;
                 Text = txt;
-                Comment = cmt;
             }
         }
 
@@ -107,6 +106,21 @@ namespace ncl
             }
 
             #endregion constructor
+
+            public bool Init(string schemaFile)
+            {
+                if (File.Exists(schemaFile))
+                    LoadCsvSchema(schemaFile);
+                else
+                {
+                    if (MsgBox.Query(schemaFile + " file not found!\n" + "created base schema file?"))
+                        SaveCsvSchema(schemaFile);
+
+                    return false;
+                }
+
+                return true;
+            }
 
             /// <summary>
             /// 정수 배열인 DataArray의 값을 Boolean 배열인 BitsX, BitsY에 매핑한다
@@ -266,8 +280,6 @@ namespace ncl
 
                         if (words.Length > 1)
                             item.Category = words[1].Trim();
-                        if (words.Length > 2)
-                            item.Comment = words[2].Trim();
 
                         // TODO : Check exists key
                         Items.Add(key, item);
@@ -285,7 +297,7 @@ namespace ncl
             public void SaveCsvSchema(string filename, char seperator = '|')
             {
                 string sep = " " + seperator + " ";
-                string fmt = "{0:D2}" + sep + "{1:D2}" + sep + "{2:D2}" + sep + "{3,-20}" + sep + "{4,-16}" + sep + "{5,-10}" + sep + "{6}";
+                string fmt = "{0:D2}" + sep + "{1:D2}" + sep + "{2:D2}" + sep + "{3,-20}" + sep + "{4,-16}" + sep + "{5,-10}";
 
                 using (StreamWriter w = new System.IO.StreamWriter(filename))
                 {
@@ -309,7 +321,7 @@ namespace ncl
                     }
                     w.WriteLine("");
 
-                    w.WriteLine("# Mod | Sub | Bit | Name | Category | Text | Comment");
+                    w.WriteLine("# Mod | Sub | Bit | Name | Category | Text |");
                     w.WriteLine("");
 
                     foreach (var kvp in Items)
@@ -319,8 +331,7 @@ namespace ncl
                             kvp.Value.BitIndex,
                             kvp.Key,
                             kvp.Value.Category,
-                            kvp.Value.Text,
-                            kvp.Value.Comment));
+                            kvp.Value.Text));
                 }
             }
 
@@ -397,7 +408,6 @@ namespace ncl
                             {
                                 case 4: item.Category = words[i].Trim(); break;
                                 case 5: item.Text = words[i].Trim(); break;
-                                case 6: item.Comment = words[i].Trim(); break;
                             }
 
                         Items.Add(words[3].Trim(), item);

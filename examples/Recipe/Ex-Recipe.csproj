@@ -57,10 +57,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ncl.Equipment\ncl.Equipment.csproj">
-      <Project>{C8B2D873-C238-4AE5-9E06-62E7148A4C79}</Project>
-      <Name>ncl.Equipment</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ncl\ncl.csproj">
       <Project>{54481E82-5219-432B-B43D-AA33A49349FC}</Project>
       <Name>ncl</Name>

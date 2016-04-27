@@ -18,7 +18,7 @@ namespace ncl
 
         #region field
 
-        private BackgroundWorker _Worker = null;
+        public BackgroundWorker Worker = null;
         private int _ErrorCode = 0;
         private int _SeqNo = 0;
 
@@ -56,7 +56,7 @@ namespace ncl
 
                     if (_SeqNo > 0)
                     {
-                        if (_Worker.IsBusy)
+                        if (Worker.IsBusy)
                             return SeqStatus.Progress;
                         else
                             return SeqStatus.Paused;
@@ -67,28 +67,18 @@ namespace ncl
             }
         }
 
-        public bool WorkerReportsProgress
-        {
-            get { return _Worker.WorkerReportsProgress; }
-            set { _Worker.WorkerReportsProgress = value; }
-        }
-
-        public int ProgressInterval { get; set; }
-
         #endregion property
 
         #region constructor
 
         public Sequence()
         {
-            _Worker = new BackgroundWorker();
-            _Worker.WorkerReportsProgress = true; // 이거 없이 _Worker.ReportProgress 호출하면 오류 발생
-            _Worker.WorkerSupportsCancellation = true;
-            _Worker.DoWork += DoWork;
-            _Worker.ProgressChanged += DoProgress;
-            _Worker.RunWorkerCompleted += DoCompleted;
-
-            ProgressInterval = 100;
+            Worker = new BackgroundWorker();
+            Worker.WorkerReportsProgress = true; // 이거 없이 Worker.ReportProgress 호출하면 오류 발생
+            Worker.WorkerSupportsCancellation = true;
+            Worker.DoWork += DoWork;
+            Worker.ProgressChanged += DoProgress;
+            Worker.RunWorkerCompleted += DoCompleted;
         }
 
         #endregion constructor
@@ -97,7 +87,7 @@ namespace ncl
 
         public void Start(int nStartNo = 1)
         {
-            if (!_Worker.IsBusy)
+            if (!Worker.IsBusy)
             {
                 _ErrorCode = 0;
                 if (OnCanStart != null)
@@ -108,13 +98,13 @@ namespace ncl
                         return;
                 }
                 SeqNo = nStartNo;
-                _Worker.RunWorkerAsync();
+                Worker.RunWorkerAsync();
             }
         }
 
         public void Abort()
         {
-            _Worker.CancelAsync();
+            Worker.CancelAsync();
             SeqNo = -Math.Abs(_SeqNo);
         }
 
@@ -138,21 +128,21 @@ namespace ncl
 
         public void Error(int nErrCode)
         {
-            _Worker.CancelAsync();
+            Worker.CancelAsync();
             SeqNo = -Math.Abs(_SeqNo);
             _ErrorCode = nErrCode;
         }
 
         public void Pause()
         {
-            if (_Worker.IsBusy)
-                _Worker.CancelAsync();
+            if (Worker.IsBusy)
+                Worker.CancelAsync();
         }
 
         public void Resume()
         {
-            if (!_Worker.IsBusy)
-                _Worker.RunWorkerAsync();
+            if (!Worker.IsBusy)
+                Worker.RunWorkerAsync();
         }
 
         #endregion method
@@ -173,19 +163,11 @@ namespace ncl
         {
             try
             {
-                int tick = Environment.TickCount + ProgressInterval;
-
-                while (_SeqNo > 0)
+                while (_SeqNo > 0 && !Worker.CancellationPending)
                 {
                     if (OnWork != null) OnWork(this, args);
 
-                    if (_Worker.WorkerReportsProgress && tick < Environment.TickCount)
-                    {
-                        _Worker.ReportProgress(_SeqNo);
-                        tick = Environment.TickCount + ProgressInterval;
-                    }
-
-                    if (_Worker.CancellationPending) // request suspend
+                    if (Worker.CancellationPending) // request suspend
                     {
                         break;
                     }

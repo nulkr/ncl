@@ -73,7 +73,7 @@ namespace ExRecipe
 
             Console.Write("=====================================\n");
             Console.Write("Check Alarms......");
-            Alarms alarms = new Alarms();
+            AlarmList alarms = new AlarmList();
             alarms.SaveToCSV("alarms.csv");
             Console.Write(alarms[33].Text); Console.Write(" >>> ");
             alarms[33].Text = "Changed";

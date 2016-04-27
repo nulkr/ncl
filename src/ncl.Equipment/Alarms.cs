@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace ncl
 {
@@ -30,9 +31,8 @@ namespace ncl
             }
         }
 
-        public class Alarms
+        public class AlarmList
         {
-            public const int BUFFER_COUNT = 32;
             public const int ALARM_COUNT = 1000;
 
             public readonly DataInfo DataInfo = new DataInfo(1, "ncl.Equipment.Alarms");
@@ -41,26 +41,30 @@ namespace ncl
 
             private AlarmItem[] _Array = new AlarmItem[ALARM_COUNT];
 
-            public volatile int[] Buffers = new int[BUFFER_COUNT];
-
-            public Form AlarmForm = null;
-
             public AlarmItem this[int code] { get { return _Array[code]; } }
 
-            public bool AlarmExists { get { return Buffers[0] != 0; } }
-
-            public Alarms(string imgPath = "")
+            public AlarmList()
             {
                 for (int i = 0; i < ALARM_COUNT; i++)
                     _Array[i] = new AlarmItem(i);
+            }
 
-                for (int i = 0; i < BUFFER_COUNT; i++)
-                    Buffers[i] = 0;
-
+            public bool Init(string alarmListFile, string imgPath)
+            {
                 if (imgPath == "")
                     ImgPath = App.Path;
                 else
                     ImgPath = imgPath;
+
+                if (!File.Exists(alarmListFile))
+                {
+                    if (MsgBox.Query(alarmListFile + " file not found!\n" + "created base schema file?"))
+                        SaveToCSV(alarmListFile);
+
+                    return false;
+                }
+                LoadFromCSV(alarmListFile);
+                return true;
             }
 
             public void LoadFromCSV(string filename, char seperator = '|')
@@ -173,6 +177,22 @@ namespace ncl
 
                 fr.Close();
             }
+        }
+
+        public class AlarmManager
+        {
+            private const int BUFFER_COUNT = 32;
+
+            private Form _AlarmForm = null;
+
+            public int[] Buffers = new int[BUFFER_COUNT];
+
+            public bool AlarmExists { get { return Buffers[0] != 0; } }
+
+            public AlarmManager(Form alarmForm)
+            {
+                ClearBuffers();
+            }
 
             public void ClearBuffers()
             {
@@ -182,16 +202,18 @@ namespace ncl
 
             public void AlarmOccur(int code)
             {
+                Debug.Assert(_AlarmForm != null, "AlarmForm not assigned!");
+
                 for (int i = 0; i < BUFFER_COUNT; i++)
                     if (Buffers[i] == code) // aleady exists
                     {
-                        AlarmForm.InvokeIfNeeded(() => { AlarmForm.Show(); AlarmForm.BringToFront(); });
+                        _AlarmForm.InvokeIfNeeded(() => { _AlarmForm.Show(); _AlarmForm.BringToFront(); });
                         break;
                     }
-                    else if (Buffers[i] == 0) // empty buffer
+                    else if (Buffers[i] == 0) // empty buffer found
                     {
                         Buffers[i] = code;
-                        AlarmForm.InvokeIfNeeded(() => { AlarmForm.Hide(); AlarmForm.Show(); AlarmForm.BringToFront(); });
+                        _AlarmForm.InvokeIfNeeded(() => { _AlarmForm.Hide(); _AlarmForm.Show(); _AlarmForm.BringToFront(); });
                         break;
                     }
             }
