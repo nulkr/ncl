@@ -150,8 +150,10 @@ namespace ncl
 
         # region Directories
 
+        /// <summary>
         /// sBaseDir 에서 nUpCount 만큼 상위 이동한 Directory 이름을 반환
-        /// <param name="sBase"></param>
+        /// </summary>
+        /// <param name="sBaseDir"></param>
         /// <param name="nUpCount"></param>
         /// <returns></returns>
         public static string GetDir(string sBaseDir, int nUpCount)
@@ -165,24 +167,27 @@ namespace ncl
             return sBaseDir.Remove(nStartIndex + 2);
         }
 
-        /// 상대 경로로 표현된 디렉토리를 AppDir를 기반으로하는 풀 디렉토리명으로 만들어 반환
-        /// <param name="sRelativeDirName"></param>
+        /// <summary>
+        /// 상대 경로로 표현된 디렉토리를 BaseDir를 기반으로하는 풀 디렉토리명으로 만들어 반환
+        /// </summary>
+        /// <param name="baseDir"></param>
+        /// <param name="relativeDir"></param>
         /// <returns></returns>
-        public static string GetDir(string sRelativeDirName)
+        public static string GetDir(string baseDir, string relativeDir)
         {
-            if (sRelativeDirName.IndexOf("..") == 0)
+            if (relativeDir.IndexOf("..") == 0)
             {
                 // http://stackoverflow.com/questions/541954/how-would-you-count-occurrences-of-a-string-within-a-string
-                int nCnt = Regex.Matches(sRelativeDirName, "..").Count;
+                int nCnt = Regex.Matches(relativeDir, "..").Count;
 
-                return Utils.GetDir(App.Path, nCnt);
+                return Utils.GetDir(baseDir, nCnt);
             }
             else
             {
-                if (sRelativeDirName[0] == '.' || sRelativeDirName[0] == '\\')
-                    return App.Path + sRelativeDirName.Substring(1);
+                if (relativeDir[0] == '.' || relativeDir[0] == '\\')
+                    return baseDir + relativeDir.Substring(1);
                 else
-                    return App.Path + sRelativeDirName;
+                    return baseDir + relativeDir;
             }
         }
 
@@ -239,30 +244,6 @@ namespace ncl
         public static double ToDegree(double angleDeg)
         {
             return 180.0 / Math.PI * angleDeg;
-        }
-
-        public static bool InRange(int value, int min, int max)
-        {
-            return (value >= min && value <= max);
-        }
-
-        public static bool InRange(double value, double min, double max)
-        {
-            return (value >= min && value <= max);
-        }
-
-        public static int EnsureRange(int value, int min, int max)
-        {
-            if (value < min) return min;
-            if (value > max) return max;
-            return value;
-        }
-
-        public static double EnsureRange(double value, double min, double max)
-        {
-            if (value < min) return min;
-            if (value > max) return max;
-            return value;
         }
 
         public static bool GetBit32(UInt32 value, int bitIndex)

@@ -50,7 +50,8 @@ namespace ncl
 
         protected override void OnClick(EventArgs e)
         {
-            State = !State;
+            if (StateProp.ChangeOnClick)
+                State = !State;
 
             base.OnClick(e);
         }

@@ -14,7 +14,7 @@ namespace ncl
         public const int WM_SETREDRAW = 0xB;
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int FindWindow(string lpClassName, string lpWindowName);
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         public const int SW_FORCEMINIMIZE = 11; // Minimizes a window, even if the thread that owns the window is not responding. This flag should only be used when minimizing windows from a different thread.</para>
         public const int SW_HIDE = 0; // Hides the window and activates another window.</para>

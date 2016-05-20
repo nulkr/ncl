@@ -45,27 +45,18 @@ namespace ncl
         {
             WritePrivateProfileString(section, key, sValue, FileName);
         }
-
-        public void Write(string section, string key, int nValue)
-        {
-            WritePrivateProfileString(section, key, nValue.ToString(), FileName);
-        }
-
         public void Write(string section, string key, double dValue)
         {
-            WritePrivateProfileString(section, key, dValue.ToString(), FileName);
+            WritePrivateProfileString(section, key, dValue.ToString("F5"), FileName);
         }
-
-        public void Write(string section, string key, bool bValue)
-        {
-            WritePrivateProfileString(section, key, bValue.ToString(), FileName);
-        }
-
         public void Write(string section, string key, Color color)
         {
             WritePrivateProfileString(section, key, ColorTranslator.ToHtml(color), FileName);
         }
-
+        public void Write(string section, string key, TimeSpan defaultValue)
+        {
+            Write(section, key, defaultValue.Ticks);
+        }
         public void Write<T>(string section, string key, T e)
         {
             WritePrivateProfileString(section, key, e.ToString(), FileName);
@@ -94,27 +85,34 @@ namespace ncl
             else
                 return sDefault;
         }
-
-        public int Read(string section, string key, int nDefault)
+        public int Read(string section, string key, int defaultValue)
         {
-            return Convert.ToInt32(Read(section, key, nDefault.ToString()));
+            return Convert.ToInt32(Read(section, key, defaultValue.ToString()));
         }
-
-        public double Read(string section, string key, double dDefault)
+        public TimeSpan Read(string section, string key, TimeSpan defaultValue)
         {
-            return Convert.ToDouble(Read(section, key, dDefault.ToString()));
+            return TimeSpan.FromTicks( Read(section, key, defaultValue.Ticks) );
         }
-
-        public bool Read(string section, string key, bool bDefault)
+        public DateTime Read(string section, string key, DateTime defaultValue)
         {
-            return Convert.ToBoolean(Read(section, key, bDefault.ToString()));
+            return Convert.ToDateTime(Read(section, key, defaultValue.ToString()));
         }
-
-        public Color Read(string section, string key, Color cDefault)
+        public long Read(string section, string key, long defaultValue)
         {
-            return ColorTranslator.FromHtml(Read(section, key, ColorTranslator.ToHtml(cDefault)));
+            return Convert.ToInt64(Read(section, key, defaultValue.ToString()));
         }
-
+        public double Read(string section, string key, double defaultValue)
+        {
+            return Convert.ToDouble(Read(section, key, defaultValue.ToString("F5")));
+        }
+        public bool Read(string section, string key, bool defaultValue)
+        {
+            return Convert.ToBoolean(Read(section, key, defaultValue.ToString()));
+        }
+        public Color Read(string section, string key, Color defaultValue)
+        {
+            return ColorTranslator.FromHtml(Read(section, key, ColorTranslator.ToHtml(defaultValue)));
+        }
         public T Read<T>(string section, string key, Enum defaultValue)
         {
             return (T)Enum.Parse(typeof(T), Read(section, key, defaultValue.ToString()));

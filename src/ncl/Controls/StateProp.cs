@@ -63,17 +63,20 @@ namespace ncl
 
             if (_ChangeImage && _OnImageIndex > 0)
             {
+                _Owner.BackgroundImage = null;
+
                 if (_State)
                     _Owner.GetType().GetProperty("ImageIndex").SetValue(_Owner, _OnImageIndex, null);
                 else
                     _Owner.GetType().GetProperty("ImageIndex").SetValue(_Owner, 0, null);
             }
-
-            if (_State)
-                _Owner.BackgroundImage = _OnBitmap;
             else
-                _Owner.BackgroundImage = _OffBitmap;
-
+            {
+                if (_State)
+                    _Owner.BackgroundImage = _OnBitmap;
+                else
+                    _Owner.BackgroundImage = _OffBitmap;
+            }
             _Owner.ResumeDrawing();
         }
 
@@ -129,6 +132,21 @@ namespace ncl
                     UpdateState();
                 }
             }
+        }
+
+        public bool ChangeOnClick { get; set; }
+
+        public int OnImageIndex 
+        { 
+            get { return _OnImageIndex; } 
+            set 
+            {
+                if (value != _OnImageIndex)
+                {
+                    _OnImageIndex = value;
+                    UpdateState();
+                }
+            } 
         }
 
         public LinearGradientMode GradientMode
